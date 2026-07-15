@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>adults.uz — Admin panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14161f; --surface:#1c1f2a; --surface-2:#252938; --line:#323649;
+    --paper:#f3f1ea; --muted:#9a9fb3; --teal:#22c3ab; --mustard:#e8a33d; --danger:#e2574c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  .layout{display:flex; min-height:100vh;}
+
+  /* ---- Sidebar ---- */
+  aside{
+    width:220px; flex:none; background:var(--surface); border-right:1px solid var(--line);
+    padding:22px 16px; position:sticky; top:0; height:100vh;
+  }
+  .brand{font-family:'Space Grotesk'; font-weight:700; font-size:1.2rem; display:flex; align-items:center; gap:8px; margin-bottom:30px;}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--teal); box-shadow:0 0 12px var(--teal);}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; color:var(--muted);
+    font-size:.87rem; font-weight:600; cursor:pointer; margin-bottom:4px; transition:.15s ease;
+  }
+  .nav-item:hover{background:var(--surface-2); color:var(--paper);}
+  .nav-item.active{background:rgba(34,195,171,.14); color:var(--teal);}
+
+  main{flex:1; padding:28px 34px; max-width:1180px;}
+  .top-row{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px;}
+  .page-title{font-family:'Space Grotesk'; font-weight:700; font-size:1.6rem;}
+  .page-sub{color:var(--muted); font-size:.86rem; margin-top:4px;}
+  .date-range{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:.82rem;
+    color:var(--muted); font-family:'JetBrains Mono';
+  }
+
+  /* ---- KPI cards ---- */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;}
+  .kpi-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:18px 20px;
+  }
+  .kpi-label{color:var(--muted); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;}
+  .kpi-value{font-family:'Space Grotesk'; font-weight:700; font-size:1.6rem;}
+  .kpi-delta{font-size:.78rem; margin-top:6px; font-family:'JetBrains Mono';}
+  .up{color:var(--teal);} .down{color:var(--danger);}
+
+  /* ---- panels ---- */
+  .panel-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:16px; margin-bottom:16px;}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px 22px;}
+  .panel-title{font-family:'Space Grotesk'; font-weight:600; font-size:1rem; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;}
+  .panel-title .tag{font-size:.7rem; color:var(--muted); font-family:'JetBrains Mono'; font-weight:500;}
+
+  /* top products bars */
+  .bar-row{margin-bottom:14px;}
+  .bar-top{display:flex; justify-content:space-between; font-size:.84rem; margin-bottom:6px;}
+  .bar-name{font-weight:600;}
+  .bar-val{font-family:'JetBrains Mono'; color:var(--muted);}
+  .bar-track{height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--teal), #57e4cd);}
+
+  /* customers list */
+  .cust-row{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .cust-row:last-child{border-bottom:none;}
+  .cust-avatar{
+    width:36px; height:36px; border-radius:50%; background:var(--surface-2); display:flex; align-items:center;
+    justify-content:center; font-weight:700; font-family:'Space Grotesk'; font-size:.85rem; flex:none;
+  }
+  .cust-info{flex:1;}
+  .cust-name{font-weight:600; font-size:.87rem;}
+  .cust-meta{color:var(--muted); font-size:.74rem; margin-top:2px;}
+  .cust-total{font-family:'JetBrains Mono'; font-weight:600; font-size:.87rem; color:var(--teal);}
+  .rank-badge{
+    width:22px; height:22px; border-radius:6px; background:var(--surface-2); display:flex; align-items:center;
+    justify-content:center; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono'; color:var(--mustard); flex:none;
+  }
+
+  /* inventory table */
+  table{width:100%; border-collapse:collapse;}
+  th{
+    text-align:left; font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;
+    padding:0 12px 10px; font-weight:600; border-bottom:1px solid var(--line);
+  }
+  td{padding:12px; font-size:.85rem; border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  .prod-cell{display:flex; align-items:center; gap:10px;}
+  .prod-emoji{width:34px; height:34px; border-radius:9px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:1.1rem;}
+  .stock-badge{
+    padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono';
+  }
+  .stock-ok{background:rgba(34,195,171,.15); color:var(--teal);}
+  .stock-low{background:rgba(232,163,61,.15); color:var(--mustard);}
+  .stock-out{background:rgba(226,87,76,.15); color:var(--danger);}
+  .trend{font-family:'JetBrains Mono'; font-size:.8rem;}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand"><span class="dot"></span>adults<span style="color:var(--muted)">.uz</span></div>
+    <div class="nav-item active">📊 Dashboard</div>
+    <div class="nav-item">📦 Ombor</div>
+    <div class="nav-item">🧾 Buyurtmalar</div>
+    <div class="nav-item">👥 Mijozlar</div>
+    <div class="nav-item">🗂️ Katalog</div>
+    <div class="nav-item">⚙️ Sozlamalar</div>
+  </aside>
+
+  <main>
+    <div class="top-row">
+      <div>
+        <div class="page-title">Boshqaruv paneli</div>
+        <div class="page-sub">Do'kon holati bir qarashda — bugungi hisobot</div>
+      </div>
+      <div class="date-range">12 iyul, 2026</div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Bugungi savdo</div>
+        <div class="kpi-value mono" id="kpiRevenue">—</div>
+        <div class="kpi-delta" style="color:var(--muted);">Bugun tasdiqlangan buyurtmalar bo'yicha</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Bugungi buyurtmalar</div>
+        <div class="kpi-value mono" id="kpiOrders">—</div>
+        <div class="kpi-delta" style="color:var(--muted);">Jami sonda</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Faol mijozlar</div>
+        <div class="kpi-value mono" id="kpiCustomers">—</div>
+        <div class="kpi-delta" style="color:var(--muted);">Kamida 1 marta buyurtma bergan</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Omborda kam qolgan</div>
+        <div class="kpi-value mono" style="color:var(--danger);" id="kpiLowStock">—</div>
+        <div class="kpi-delta" style="color:var(--muted);">To'ldirish talab qilinadi</div>
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <!-- Top products -->
+      <div class="panel">
+        <div class="panel-title">Eng ko'p sotilgan mahsulotlar <span class="tag">so'nggi 7 kun</span></div>
+        <div id="topProducts"></div>
+      </div>
+
+      <!-- Top customers -->
+      <div class="panel">
+        <div class="panel-title">Faol mijozlar <span class="tag">buyurtmalar soni bo'yicha</span></div>
+        <div id="topCustomers"></div>
+      </div>
+    </div>
+
+    <!-- Inventory -->
+    <div class="panel">
+      <div class="panel-title">
+        Ombor holati
+        <span class="tag" id="invSummary"></span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Mahsulot</th><th>O'lcham / Rang</th><th>Qoldiq</th><th>Holat</th><th>Haftalik trend</th></tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Add product with AI description -->
+    <div class="panel" style="margin-top:16px;">
+      <div class="panel-title">
+        🤖 Yangi mahsulot qo'shish
+        <span class="tag">AI tavsif generatori bilan</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <input id="npName" placeholder="Mahsulot nomi" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+        <select id="npCategory" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';"></select>
+        <input id="npPrice" type="number" placeholder="Narx (so'm)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+        <input id="npStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+        <input id="npSize" placeholder="O'lcham (masalan: L)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+        <input id="npColor" placeholder="Rang" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <textarea id="npDescription" placeholder="Tavsif — yoki AI'ga yozdiring →" rows="2" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
+        <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(34,195,171,.15); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">✨ AI yozsin</button>
+      </div>
+      <button onclick="submitNewProduct()" style="width:100%; background:var(--teal); border:none; border-radius:10px; padding:12px; color:#092420; font-weight:700; cursor:pointer;">Mahsulotni qo'shish</button>
+      <div id="npStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   API BILAN ISHLASH — bu panel endi FastAPI backend (api.py)
+   orqali database.py'dagi real ma'lumotlarni ko'rsatadi.
+   ========================================================= */
+const API_BASE = ""; // api.py shu faylni o'zi /admin orqali beradi
+
+const CATEGORY_EMOJI = {"Futbolka":"👕", "Ko'ylak":"👔", "Shim":"👖", "Kurtka":"🧥", "Aksessuar":"👞"};
+
+function money(n){ return Math.round(n).toLocaleString('uz-UZ') + " so'm"; }
+
+async function apiGet(path){
+  const res = await fetch(API_BASE + path);
+  if(!res.ok) throw new Error("API xatosi: " + path);
+  return res.json();
+}
+
+function stockBadge(stock){
+  if(stock === 0) return `<span class="stock-badge stock-out">TUGAGAN</span>`;
+  if(stock <= 4) return `<span class="stock-badge stock-low">KAM QOLDI</span>`;
+  return `<span class="stock-badge stock-ok">YETARLI</span>`;
+}
+
+async function loadSummary(){
+  try{
+    const s = await apiGet('/api/admin/summary');
+    document.getElementById('kpiRevenue').textContent = money(s.today_revenue);
+    document.getElementById('kpiOrders').textContent = s.today_order_count;
+    document.getElementById('kpiCustomers').textContent = s.active_customers;
+    document.getElementById('kpiLowStock').textContent = (s.low_stock_count + s.out_of_stock_count) + " mahsulot";
+  } catch(e){
+    console.error(e);
+    showError('kpiRevenue');
+  }
+}
+
+async function loadTopProducts(){
+  const wrap = document.getElementById('topProducts');
+  try{
+    const products = await apiGet('/api/admin/top-products?limit=5&days=7');
+    if(products.length === 0){ wrap.innerHTML = emptyMsg("Hali sotuv ma'lumotlari yo'q"); return; }
+    const maxSold = Math.max(...products.map(p=>p.sold_qty));
+    wrap.innerHTML = products.map(p => `
+      <div class="bar-row">
+        <div class="bar-top">
+          <span class="bar-name">${p.name}</span>
+          <span class="bar-val">${p.sold_qty} dona · ${money(p.revenue)}</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(p.sold_qty/maxSold*100).toFixed(0)}%"></div></div>
+      </div>
+    `).join('');
+  } catch(e){
+    console.error(e);
+    wrap.innerHTML = emptyMsg("Ma'lumot yuklanmadi");
+  }
+}
+
+async function loadTopCustomers(){
+  const wrap = document.getElementById('topCustomers');
+  try{
+    const customers = await apiGet('/api/admin/top-customers?limit=5');
+    if(customers.length === 0){ wrap.innerHTML = emptyMsg("Hali mijozlar yo'q"); return; }
+    wrap.innerHTML = customers.map((c,i) => `
+      <div class="cust-row">
+        <div class="rank-badge">${i+1}</div>
+        <div class="cust-avatar">${(c.full_name || "?").split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+        <div class="cust-info">
+          <div class="cust-name">${c.full_name}</div>
+          <div class="cust-meta">${c.order_count} ta buyurtma</div>
+        </div>
+        <div class="cust-total">${money(c.total_spent)}</div>
+      </div>
+    `).join('');
+  } catch(e){
+    console.error(e);
+    wrap.innerHTML = emptyMsg("Ma'lumot yuklanmadi");
+  }
+}
+
+async function loadInventory(){
+  const body = document.getElementById('inventoryBody');
+  try{
+    const items = await apiGet('/api/admin/inventory');
+    if(items.length === 0){
+      body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted); padding:24px;">Ombor bo'sh — hali mahsulot qo'shilmagan</td></tr>`;
+      document.getElementById('invSummary').textContent = "";
+      return;
+    }
+    body.innerHTML = items.map(i => `
+      <tr>
+        <td><div class="prod-cell"><div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[i.category_id]] || "🛍️"}</div>${i.name}</div></td>
+        <td class="mono" style="color:var(--muted);">${[i.size, i.color].filter(Boolean).join(' / ') || '—'}</td>
+        <td class="mono">${i.stock} dona</td>
+        <td>${stockBadge(i.stock)}</td>
+        <td class="trend" style="color:var(--muted);">—</td>
+      </tr>
+    `).join('');
+    const lowCount = items.filter(i => i.stock <= 4).length;
+    document.getElementById('invSummary').textContent = `${lowCount} ta mahsulot to'ldirishni talab qiladi`;
+  } catch(e){
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger); padding:24px;">Ombor ma'lumotlari yuklanmadi</td></tr>`;
+  }
+}
+
+function emptyMsg(text){ return `<div style="color:var(--muted); font-size:.85rem; padding:10px 0;">${text}</div>`; }
+function showError(id){ document.getElementById(id).textContent = "—"; }
+
+async function apiPost(path, body){
+  const res = await fetch(API_BASE + path, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body),
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({detail:"Noma'lum xatolik"}));
+    throw new Error(err.detail || "API xatosi");
+  }
+  return res.json();
+}
+
+let categoryMap = {};
+
+async function loadCategoryOptions(){
+  try{
+    const cats = await apiGet('/api/categories');
+    const select = document.getElementById('npCategory');
+    categoryMap = {};
+    cats.forEach(c => categoryMap[c.id] = c.name);
+    select.innerHTML = cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  } catch(e){ console.error(e); }
+}
+
+async function generateAIDescription(){
+  const btn = document.getElementById('aiGenBtn');
+  const name = document.getElementById('npName').value.trim();
+  if(!name){ showStatus("Avval mahsulot nomini kiriting", true); return; }
+
+  btn.disabled = true; btn.textContent = "Yozmoqda...";
+  try{
+    const categoryName = categoryMap[document.getElementById('npCategory').value] || "";
+    const result = await apiPost('/api/ai/generate-description', {
+      name,
+      category: categoryName,
+      color: document.getElementById('npColor').value.trim(),
+      size: document.getElementById('npSize').value.trim(),
+    });
+    document.getElementById('npDescription').value = result.description;
+    showStatus("✅ Tavsif AI yordamida yaratildi");
+  } catch(e){
+    console.error(e);
+    showStatus("⚠️ AI xizmati ishlamadi — backend'da ANTHROPIC_API_KEY sozlanganini tekshiring", true);
+  }
+  btn.disabled = false; btn.textContent = "✨ AI yozsin";
+}
+
+async function submitNewProduct(){
+  const name = document.getElementById('npName').value.trim();
+  const price = parseFloat(document.getElementById('npPrice').value);
+  if(!name || !price){ showStatus("Nomi va narxini kiriting", true); return; }
+
+  try{
+    await fetch('/api/products', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name, price,
+        size: document.getElementById('npSize').value.trim() || null,
+        color: document.getElementById('npColor').value.trim() || null,
+        stock: parseInt(document.getElementById('npStock').value) || 0,
+        description: document.getElementById('npDescription').value.trim() || null,
+        category_id: parseInt(document.getElementById('npCategory').value) || null,
+      }),
+    });
+    showStatus("✅ Mahsulot qo'shildi!");
+    ['npName','npPrice','npStock','npSize','npColor','npDescription'].forEach(id => document.getElementById(id).value = '');
+    loadInventory();
+  } catch(e){
+    console.error(e);
+    showStatus("⚠️ Mahsulot qo'shilmadi", true);
+  }
+}
+
+function showStatus(text, isError=false){
+  const el = document.getElementById('npStatus');
+  el.textContent = text;
+  el.style.color = isError ? 'var(--danger)' : 'var(--teal)';
+}
+
+/* ---------- Init ---------- */
+(async function initAdmin(){
+  await loadCategoryOptions();
+  loadSummary();
+  loadTopProducts();
+  loadTopCustomers();
+  loadInventory();
+})();
+</script>
+</body>
+</html>
