@@ -98,7 +98,44 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup() -> None:
     await db.init_db()
+    await seed_if_empty()
     logger.info("Server ishga tushdi, baza tayyor.")
+
+
+async def seed_if_empty() -> None:
+    """
+    Agar baza bo'sh bo'lsa (birinchi marta deploy qilinganda), demo
+    kategoriya va mahsulotlarni avtomatik qo'shadi. Hostingda (Render/Railway)
+    qo'lda 'python seed.py' ishga tushirish qiyin bo'lgani uchun kerak.
+    """
+    existing = await db.list_categories()
+    if existing:
+        return
+
+    logger.info("Baza bo'sh — demo ma'lumotlar avtomatik qo'shilmoqda...")
+    categories = ["Futbolka", "Ko'ylak", "Shim", "Kurtka", "Aksessuar"]
+    cat_ids = {}
+    for name in categories:
+        cat = await db.add_category(name)
+        cat_ids[name] = cat.id
+
+    products = [
+        dict(name="Klassik oq futbolka", price=99000, size="L", color="Oq", stock=24,
+             description="100% paxta, yozgi kolleksiya.", category_id=cat_ids["Futbolka"]),
+        dict(name="Sport futbolka", price=119000, size="L", color="Yashil", stock=30,
+             description="Nafas oluvchi mato, sport uchun.", category_id=cat_ids["Futbolka"]),
+        dict(name="Denim kurtka", price=349000, size="M", color="Ko'k", stock=6,
+             description="Og'ir zichlikdagi denim, klassik kroy.", category_id=cat_ids["Kurtka"]),
+        dict(name="Rasmiy ko'ylak", price=189000, size="S", color="Oq", stock=15,
+             description="Ish uchun ideal.", category_id=cat_ids["Ko'ylak"]),
+        dict(name="Slim fit shim", price=229000, size="32", color="Qora", stock=2,
+             description="Cho'ziluvchan mato.", category_id=cat_ids["Shim"]),
+        dict(name="Teri kamar", price=79000, size="One Size", color="Jigarrang", stock=12,
+             description="Tabiiy teridan.", category_id=cat_ids["Aksessuar"]),
+    ]
+    for p in products:
+        await db.add_product(**p)
+    logger.info(f"Demo ma'lumotlar qo'shildi: {len(categories)} kategoriya, {len(products)} mahsulot.")
 
 
 @app.exception_handler(Exception)
