@@ -211,15 +211,17 @@
           <select id="npCategory" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';"></select>
           <input id="npPrice" type="number" placeholder="Narx (so'm)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           <input id="npStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-          <input id="npSize" placeholder="O'lcham (masalan: L)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-          <input id="npColor" placeholder="Rang" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="npSize" placeholder="O'lcham(lar) — vergul bilan: L, M, XL" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="npColor" placeholder="Rang(lar) — vergul bilan: Qora, Ko'k" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
         </div>
         <div style="margin-bottom:12px;">
           <label style="display:block; font-size:.78rem; color:var(--muted); margin-bottom:6px;">Mahsulot rasmi</label>
-          <div style="display:flex; align-items:center; gap:12px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
             <div id="npImagePreview" style="width:64px; height:64px; border-radius:10px; background:var(--surface-2); border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:1.4rem; overflow:hidden; flex:none;">🖼️</div>
             <input type="file" id="npImageFile" accept="image/*" style="color:var(--muted); font-size:.82rem;" onchange="previewNewProductImage(event)">
           </div>
+          <input id="npImageUrl" placeholder="yoki rasm havolasini (URL) kiriting — masalan https://..." style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
+          <div style="font-size:.72rem; color:var(--muted); margin-top:4px;">💡 Fayl yuklash Render bepul tarifida qayta ishga tushganda o'chib ketishi mumkin — doimiy rasm uchun URL kiritish tavsiya etiladi</div>
         </div>
         <div style="display:flex; gap:8px; margin-bottom:10px;">
           <textarea id="npDescription" placeholder="Tavsif — yoki AI'ga yozdiring →" rows="2" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
@@ -631,25 +633,41 @@ async function submitNewProduct(){
   const price = parseFloat(document.getElementById('npPrice').value);
   if(!name || !price){ showStatus("Nomi va narxini kiriting", true); return; }
 
+  // Vergul bilan ajratilgan o'lcham/rang qiymatlarini alohida ro'yxatga ajratamiz
+  const sizesRaw = document.getElementById('npSize').value.trim();
+  const colorsRaw = document.getElementById('npColor').value.trim();
+  const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : [null];
+  const colors = colorsRaw ? colorsRaw.split(',').map(c => c.trim()).filter(Boolean) : [null];
+
+  const stock = parseInt(document.getElementById('npStock').value) || 0;
+  const description = document.getElementById('npDescription').value.trim() || null;
+  const categoryId = parseInt(document.getElementById('npCategory').value) || null;
+  const manualImageUrl = document.getElementById('npImageUrl').value.trim();
+
   try{
     showStatus("Yuklanmoqda...");
-    const imageUrl = await uploadImageIfSelected();
+    // Rasm: avval fayl tanlangan bo'lsa yuklaymiz, aks holda qo'lda kiritilgan URL ishlatiladi
+    const imageUrl = manualImageUrl || await uploadImageIfSelected();
 
-    await fetch('/api/products', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        name, price,
-        size: document.getElementById('npSize').value.trim() || null,
-        color: document.getElementById('npColor').value.trim() || null,
-        stock: parseInt(document.getElementById('npStock').value) || 0,
-        description: document.getElementById('npDescription').value.trim() || null,
-        category_id: parseInt(document.getElementById('npCategory').value) || null,
-        image_url: imageUrl,
-      }),
-    });
-    showStatus("✅ Mahsulot qo'shildi!");
-    ['npName','npPrice','npStock','npSize','npColor','npDescription'].forEach(id => document.getElementById(id).value = '');
+    // Har bir o'lcham x rang kombinatsiyasi uchun alohida mahsulot yaratamiz
+    let createdCount = 0;
+    for(const size of sizes){
+      for(const color of colors){
+        await fetch('/api/products', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name, price, size, color, stock,
+            description, category_id: categoryId,
+            image_url: imageUrl,
+          }),
+        });
+        createdCount++;
+      }
+    }
+
+    showStatus(`✅ ${createdCount} ta mahsulot qo'shildi!`);
+    ['npName','npPrice','npStock','npSize','npColor','npDescription','npImageUrl'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('npImageFile').value = '';
     document.getElementById('npImagePreview').innerHTML = '🖼️';
     selectedImageFile = null;
