@@ -45,7 +45,22 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///shop.db")
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+# Neon/Supabase/Render kabi provayderlar odatda "postgres://" yoki "postgresql://"
+# ko'rinishidagi manzil beradi. SQLAlchemy'ning async drayveri (asyncpg) ishlashi uchun
+# buni "postgresql+asyncpg://" formatiga avtomatik o'tkazamiz.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+# Ko'p provayderlar manzilga "?sslmode=require" qo'shadi, lekin asyncpg buni
+# to'g'ridan-to'g'ri tushunmaydi — shuning uchun ajratib olib, alohida beramiz.
+connect_args = {}
+if "postgresql+asyncpg" in DATABASE_URL and "sslmode=require" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("?sslmode=require", "").replace("&sslmode=require", "")
+    connect_args = {"ssl": True}
+
+engine = create_async_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 

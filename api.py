@@ -267,29 +267,72 @@ async def api_add_product(payload: ProductCreate, _: bool = Depends(verify_admin
 @app.post("/api/upload-image")
 async def api_upload_image(file: UploadFile = File(...), _: bool = Depends(verify_admin)):
     """
-    Mahsulot rasmini serverga yuklaydi va ochiq URL qaytaradi.
-    Admin panel: mahsulot qo'shishda shu URL keyin image_url sifatida saqlanadi.
+    Mahsulot rasmini yuklaydi va ochiq URL qaytaradi.
+
+    Agar CLOUDINARY_CLOUD_NAME va CLOUDINARY_UPLOAD_PRESET sozlangan bo'lsa,
+    rasm Cloudinary'ga (doimiy, bepul rasm xostingi) yuklanadi — bu Render kabi
+    hostinglarning "vaqtinchalik disk" muammosidan butunlay qutqaradi.
+
+    Agar sozlanmagan bo'lsa, mahalliy diskka saqlaydi (ESKATDIR: Render bepul
+    tarifida bu rasm qayta ishga tushganda o'chib ketishi mumkin).
     """
     allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Faqat JPEG, PNG, WEBP yoki GIF rasm yuklash mumkin")
-
-    ext = os.path.splitext(file.filename or "")[1].lower() or ".jpg"
-    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
-        ext = ".jpg"
-
-    unique_name = f"{uuid.uuid4().hex}{ext}"
-    dest_path = UPLOADS_DIR / unique_name
 
     contents = await file.read()
     max_size = 8 * 1024 * 1024  # 8 MB
     if len(contents) > max_size:
         raise HTTPException(status_code=400, detail="Rasm hajmi 8 MB dan oshmasligi kerak")
 
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+    upload_preset = os.getenv("CLOUDINARY_UPLOAD_PRESET", "")
+    imgbb_key = os.getenv("IMGBB_API_KEY", "")
+
+    if imgbb_key:
+        # ---- ImgBB orqali doimiy saqlash (Cloudinary ba'zi davlatlarda ishlamaydi) ----
+        import base64
+        import httpx as _httpx
+        b64_data = base64.b64encode(contents).decode("utf-8")
+        async with _httpx.AsyncClient(timeout=20.0) as client:
+            res = await client.post(
+                "https://api.imgbb.com/1/upload",
+                data={"key": imgbb_key, "image": b64_data},
+            )
+        if res.status_code != 200:
+            logger.error(f"ImgBB xatosi: {res.status_code} {res.text}")
+            raise HTTPException(status_code=502, detail="Rasm xosting xizmatiga ulanib bo'lmadi")
+        data = res.json()
+        image_url = data.get("data", {}).get("url")
+        logger.info(f"Rasm ImgBB'ga yuklandi: {image_url}")
+        return {"image_url": image_url}
+
+    if cloud_name and upload_preset:
+        # ---- Cloudinary orqali doimiy saqlash ----
+        import httpx as _httpx
+        async with _httpx.AsyncClient(timeout=20.0) as client:
+            res = await client.post(
+                f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload",
+                data={"upload_preset": upload_preset},
+                files={"file": (file.filename or "image.jpg", contents, file.content_type)},
+            )
+        if res.status_code != 200:
+            logger.error(f"Cloudinary xatosi: {res.status_code} {res.text}")
+            raise HTTPException(status_code=502, detail="Rasm xosting xizmatiga ulanib bo'lmadi")
+        data = res.json()
+        image_url = data.get("secure_url")
+        logger.info(f"Rasm Cloudinary'ga yuklandi: {image_url}")
+        return {"image_url": image_url}
+
+    # ---- Zaxira: mahalliy disk (vaqtinchalik, faqat CLOUDINARY sozlanmagan holat uchun) ----
+    ext = os.path.splitext(file.filename or "")[1].lower() or ".jpg"
+    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+        ext = ".jpg"
+    unique_name = f"{uuid.uuid4().hex}{ext}"
+    dest_path = UPLOADS_DIR / unique_name
     with open(dest_path, "wb") as f:
         f.write(contents)
-
-    logger.info(f"Rasm yuklandi: {unique_name} ({len(contents)} bayt)")
+    logger.warning(f"Rasm mahalliy diskka yuklandi (CLOUDINARY sozlanmagan, vaqtinchalik!): {unique_name}")
     return {"image_url": f"/static/uploads/{unique_name}"}
 
 
