@@ -98,27 +98,44 @@
   .stock-low{background:rgba(232,163,61,.15); color:var(--mustard);}
   .stock-out{background:rgba(226,87,76,.15); color:var(--danger);}
   .trend{font-family:'JetBrains Mono'; font-size:.8rem;}
+
+  /* ---- Page switching ---- */
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ---- status badges (buyurtmalar) ---- */
+  .status-badge{padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono';}
+  .status-pending{background:rgba(232,163,61,.15); color:var(--mustard);}
+  .status-paid, .status-shipped{background:rgba(34,195,171,.15); color:var(--teal);}
+  .status-delivered{background:rgba(90,200,120,.15); color:#5ac878;}
+  .status-cancelled{background:rgba(226,87,76,.15); color:var(--danger);}
+  select.status-select{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:8px; color:var(--paper);
+    font-family:'JetBrains Mono'; font-size:.75rem; padding:4px 8px; cursor:pointer;
+  }
+  .empty-row{text-align:center; color:var(--muted); padding:30px;}
 </style>
 </head>
 <body>
 <div class="layout">
   <aside>
     <div class="brand"><span class="dot"></span>adults<span style="color:var(--muted)">.uz</span></div>
-    <div class="nav-item active">📊 Dashboard</div>
-    <div class="nav-item">📦 Ombor</div>
-    <div class="nav-item">🧾 Buyurtmalar</div>
-    <div class="nav-item">👥 Mijozlar</div>
-    <div class="nav-item">🗂️ Katalog</div>
-    <div class="nav-item">⚙️ Sozlamalar</div>
+    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</div>
+    <div class="nav-item" data-page="ombor" onclick="showPage('ombor')">📦 Ombor</div>
+    <div class="nav-item" data-page="buyurtmalar" onclick="showPage('buyurtmalar')">🧾 Buyurtmalar</div>
+    <div class="nav-item" data-page="mijozlar" onclick="showPage('mijozlar')">👥 Mijozlar</div>
+    <div class="nav-item" data-page="katalog" onclick="showPage('katalog')">🗂️ Katalog</div>
+    <div class="nav-item" data-page="sozlamalar" onclick="showPage('sozlamalar')">⚙️ Sozlamalar</div>
   </aside>
 
   <main>
+    <div id="page-dashboard" class="page active">
     <div class="top-row">
       <div>
         <div class="page-title">Boshqaruv paneli</div>
         <div class="page-sub">Do'kon holati bir qarashda — bugungi hisobot</div>
       </div>
-      <div class="date-range">12 iyul, 2026</div>
+      <div class="date-range" id="todayDate">—</div>
     </div>
 
     <!-- KPI -->
@@ -158,42 +175,146 @@
         <div id="topCustomers"></div>
       </div>
     </div>
-
-    <!-- Inventory -->
-    <div class="panel">
-      <div class="panel-title">
-        Ombor holati
-        <span class="tag" id="invSummary"></span>
-      </div>
-      <table>
-        <thead>
-          <tr><th>Mahsulot</th><th>O'lcham / Rang</th><th>Qoldiq</th><th>Holat</th><th>Haftalik trend</th></tr>
-        </thead>
-        <tbody id="inventoryBody"></tbody>
-      </table>
     </div>
+    <!-- /page-dashboard -->
 
-    <!-- Add product with AI description -->
-    <div class="panel" style="margin-top:16px;">
-      <div class="panel-title">
-        🤖 Yangi mahsulot qo'shish
-        <span class="tag">AI tavsif generatori bilan</span>
+    <!-- ============ OMBOR SAHIFASI ============ -->
+    <div id="page-ombor" class="page">
+      <div class="top-row">
+        <div>
+          <div class="page-title">Ombor</div>
+          <div class="page-sub">Barcha mahsulotlar va qoldiqlar</div>
+        </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-        <input id="npName" placeholder="Mahsulot nomi" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-        <select id="npCategory" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';"></select>
-        <input id="npPrice" type="number" placeholder="Narx (so'm)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-        <input id="npStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-        <input id="npSize" placeholder="O'lcham (masalan: L)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-        <input id="npColor" placeholder="Rang" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+
+      <div class="panel">
+        <div class="panel-title">
+          Ombor holati
+          <span class="tag" id="invSummary"></span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Mahsulot</th><th>O'lcham / Rang</th><th>Qoldiq</th><th>Holat</th><th>Haftalik trend</th></tr>
+          </thead>
+          <tbody id="inventoryBody"></tbody>
+        </table>
       </div>
-      <div style="display:flex; gap:8px; margin-bottom:10px;">
-        <textarea id="npDescription" placeholder="Tavsif — yoki AI'ga yozdiring →" rows="2" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
-        <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(34,195,171,.15); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">✨ AI yozsin</button>
+
+      <!-- Add product with AI description -->
+      <div class="panel" style="margin-top:16px;">
+        <div class="panel-title">
+          🤖 Yangi mahsulot qo'shish
+          <span class="tag">AI tavsif generatori bilan</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <input id="npName" placeholder="Mahsulot nomi" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <select id="npCategory" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';"></select>
+          <input id="npPrice" type="number" placeholder="Narx (so'm)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="npStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="npSize" placeholder="O'lcham (masalan: L)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="npColor" placeholder="Rang" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:.78rem; color:var(--muted); margin-bottom:6px;">Mahsulot rasmi</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div id="npImagePreview" style="width:64px; height:64px; border-radius:10px; background:var(--surface-2); border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:1.4rem; overflow:hidden; flex:none;">🖼️</div>
+            <input type="file" id="npImageFile" accept="image/*" style="color:var(--muted); font-size:.82rem;" onchange="previewNewProductImage(event)">
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <textarea id="npDescription" placeholder="Tavsif — yoki AI'ga yozdiring →" rows="2" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
+          <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(34,195,171,.15); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">✨ AI yozsin</button>
+        </div>
+        <button onclick="submitNewProduct()" style="width:100%; background:var(--teal); border:none; border-radius:10px; padding:12px; color:#092420; font-weight:700; cursor:pointer;">Mahsulotni qo'shish</button>
+        <div id="npStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
       </div>
-      <button onclick="submitNewProduct()" style="width:100%; background:var(--teal); border:none; border-radius:10px; padding:12px; color:#092420; font-weight:700; cursor:pointer;">Mahsulotni qo'shish</button>
-      <div id="npStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
     </div>
+    <!-- /page-ombor -->
+
+    <!-- ============ BUYURTMALAR SAHIFASI ============ -->
+    <div id="page-buyurtmalar" class="page">
+      <div class="top-row">
+        <div>
+          <div class="page-title">Buyurtmalar</div>
+          <div class="page-sub">Barcha buyurtmalar va ularning holati</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          Barcha buyurtmalar
+          <span class="tag" id="ordersSummary"></span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>№</th><th>Mijoz</th><th>Mahsulot</th><th>Miqdor</th><th>Summa</th><th>Sana</th><th>Holat</th></tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- /page-buyurtmalar -->
+
+    <!-- ============ MIJOZLAR SAHIFASI ============ -->
+    <div id="page-mijozlar" class="page">
+      <div class="top-row">
+        <div>
+          <div class="page-title">Mijozlar</div>
+          <div class="page-sub">Kamida bitta buyurtma bergan barcha mijozlar</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          Mijozlar ro'yxati
+          <span class="tag" id="customersSummary"></span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Mijoz</th><th>Aloqa</th><th>Buyurtmalar soni</th><th>Jami sarflagan</th><th>Oxirgi buyurtma</th></tr>
+          </thead>
+          <tbody id="customersBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- /page-mijozlar -->
+
+    <!-- ============ KATALOG SAHIFASI ============ -->
+    <div id="page-katalog" class="page">
+      <div class="top-row">
+        <div>
+          <div class="page-title">Katalog</div>
+          <div class="page-sub">Barcha faol mahsulotlar</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          Faol mahsulotlar
+          <span class="tag" id="catalogSummary"></span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Mahsulot</th><th>Narx</th><th>O'lcham / Rang</th><th>Qoldiq</th><th></th></tr>
+          </thead>
+          <tbody id="catalogBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- /page-katalog -->
+
+    <!-- ============ SOZLAMALAR SAHIFASI ============ -->
+    <div id="page-sozlamalar" class="page">
+      <div class="top-row">
+        <div>
+          <div class="page-title">Sozlamalar</div>
+          <div class="page-sub">Do'kon sozlamalari</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div style="color:var(--muted); font-size:.9rem; padding:20px 0; text-align:center;">
+          🚧 Bu bo'lim tez orada qo'shiladi (admin login, bildirishnomalar, yetkazib berish narxi va h.k.)
+        </div>
+      </div>
+    </div>
+    <!-- /page-sozlamalar -->
   </main>
 </div>
 
@@ -207,6 +328,24 @@ const API_BASE = ""; // api.py shu faylni o'zi /admin orqali beradi
 const CATEGORY_EMOJI = {"Futbolka":"👕", "Ko'ylak":"👔", "Shim":"👖", "Kurtka":"🧥", "Aksessuar":"👞"};
 
 function money(n){ return Math.round(n).toLocaleString('uz-UZ') + " so'm"; }
+
+/* ---------- Sahifa almashtirish ---------- */
+const PAGE_LOADERS = {
+  dashboard: () => { loadSummary(); loadTopProducts(); loadTopCustomers(); },
+  ombor: () => { loadInventory(); },
+  buyurtmalar: () => { loadOrders(); },
+  mijozlar: () => { loadCustomers(); },
+  katalog: () => { loadCatalogPage(); },
+  sozlamalar: () => {},
+};
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${name}"]`).classList.add('active');
+  if(PAGE_LOADERS[name]) PAGE_LOADERS[name]();
+}
 
 async function apiGet(path){
   const res = await fetch(API_BASE + path);
@@ -287,7 +426,7 @@ async function loadInventory(){
     }
     body.innerHTML = items.map(i => `
       <tr>
-        <td><div class="prod-cell"><div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[i.category_id]] || "🛍️"}</div>${i.name}</div></td>
+        <td><div class="prod-cell">${i.image_url ? `<img src="${i.image_url}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">` : `<div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[i.category_id]] || "🛍️"}</div>`}${i.name}</div></td>
         <td class="mono" style="color:var(--muted);">${[i.size, i.color].filter(Boolean).join(' / ') || '—'}</td>
         <td class="mono">${i.stock} dona</td>
         <td>${stockBadge(i.stock)}</td>
@@ -304,6 +443,114 @@ async function loadInventory(){
 
 function emptyMsg(text){ return `<div style="color:var(--muted); font-size:.85rem; padding:10px 0;">${text}</div>`; }
 function showError(id){ document.getElementById(id).textContent = "—"; }
+
+const STATUS_LABEL = {pending:"Kutilmoqda", paid:"To'landi", shipped:"Yo'lda", delivered:"Yetkazildi", cancelled:"Bekor qilindi"};
+const STATUS_OPTIONS = Object.keys(STATUS_LABEL);
+
+async function loadOrders(){
+  const body = document.getElementById('ordersBody');
+  body.innerHTML = `<tr><td colspan="7" class="empty-row">Yuklanmoqda...</td></tr>`;
+  try{
+    const orders = await apiGet('/api/admin/orders?limit=200');
+    if(orders.length === 0){
+      body.innerHTML = `<tr><td colspan="7" class="empty-row">Hali buyurtma yo'q</td></tr>`;
+      document.getElementById('ordersSummary').textContent = "";
+      return;
+    }
+    body.innerHTML = orders.map(o => `
+      <tr>
+        <td class="mono">#${o.id}</td>
+        <td>${o.customer_name}</td>
+        <td>${o.product_name}</td>
+        <td class="mono">${o.quantity}</td>
+        <td class="mono">${money(o.total_price)}</td>
+        <td class="mono" style="color:var(--muted);">${new Date(o.created_at).toLocaleDateString('uz-UZ')}</td>
+        <td>
+          <select class="status-select status-${o.status}" onchange="changeOrderStatus(${o.id}, this.value, this)">
+            ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s===o.status?'selected':''}>${STATUS_LABEL[s]}</option>`).join('')}
+          </select>
+        </td>
+      </tr>
+    `).join('');
+    document.getElementById('ordersSummary').textContent = `${orders.length} ta buyurtma`;
+  } catch(e){
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="7" class="empty-row" style="color:var(--danger);">Buyurtmalar yuklanmadi</td></tr>`;
+  }
+}
+
+async function changeOrderStatus(orderId, newStatus, selectEl){
+  try{
+    await apiPost(`/api/admin/orders/${orderId}/status`, {status: newStatus});
+    selectEl.className = `status-select status-${newStatus}`;
+  } catch(e){
+    console.error(e);
+    alert("Holatni yangilab bo'lmadi");
+  }
+}
+
+async function loadCustomers(){
+  const body = document.getElementById('customersBody');
+  body.innerHTML = `<tr><td colspan="5" class="empty-row">Yuklanmoqda...</td></tr>`;
+  try{
+    const customers = await apiGet('/api/admin/customers?limit=200');
+    if(customers.length === 0){
+      body.innerHTML = `<tr><td colspan="5" class="empty-row">Hali mijoz yo'q</td></tr>`;
+      document.getElementById('customersSummary').textContent = "";
+      return;
+    }
+    body.innerHTML = customers.map(c => `
+      <tr>
+        <td>${c.full_name}</td>
+        <td class="mono" style="color:var(--muted);">${c.telegram_id ? 'TG: '+c.telegram_id : (c.instagram_id ? 'IG: '+c.instagram_id : '—')}</td>
+        <td class="mono">${c.order_count}</td>
+        <td class="mono" style="color:var(--teal);">${money(c.total_spent)}</td>
+        <td class="mono" style="color:var(--muted);">${c.last_order_at ? new Date(c.last_order_at).toLocaleDateString('uz-UZ') : '—'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('customersSummary').textContent = `${customers.length} ta mijoz`;
+  } catch(e){
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="5" class="empty-row" style="color:var(--danger);">Mijozlar yuklanmadi</td></tr>`;
+  }
+}
+
+async function loadCatalogPage(){
+  const body = document.getElementById('catalogBody');
+  body.innerHTML = `<tr><td colspan="5" class="empty-row">Yuklanmoqda...</td></tr>`;
+  try{
+    const products = await apiGet('/api/products?limit=200');
+    if(products.length === 0){
+      body.innerHTML = `<tr><td colspan="5" class="empty-row">Hali mahsulot yo'q</td></tr>`;
+      document.getElementById('catalogSummary').textContent = "";
+      return;
+    }
+    body.innerHTML = products.map(p => `
+      <tr>
+        <td><div class="prod-cell">${p.image_url ? `<img src="${p.image_url}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">` : `<div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[p.category_id]] || "🛍️"}</div>`}${p.name}</div></td>
+        <td class="mono" style="color:var(--teal);">${money(p.price)}</td>
+        <td class="mono" style="color:var(--muted);">${[p.size, p.color].filter(Boolean).join(' / ') || '—'}</td>
+        <td class="mono">${p.stock}</td>
+        <td><button onclick="deactivateProduct(${p.id})" style="background:rgba(226,87,76,.12); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">O'chirish</button></td>
+      </tr>
+    `).join('');
+    document.getElementById('catalogSummary').textContent = `${products.length} ta faol mahsulot`;
+  } catch(e){
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="5" class="empty-row" style="color:var(--danger);">Katalog yuklanmadi</td></tr>`;
+  }
+}
+
+async function deactivateProduct(id){
+  if(!confirm("Bu mahsulotni katalogdan o'chirishga ishonchingiz komilmi?")) return;
+  try{
+    await apiPost(`/api/products/${id}/deactivate`, {});
+    loadCatalogPage();
+  } catch(e){
+    console.error(e);
+    alert("O'chirib bo'lmadi");
+  }
+}
 
 async function apiPost(path, body){
   const res = await fetch(API_BASE + path, {
@@ -353,12 +600,41 @@ async function generateAIDescription(){
   btn.disabled = false; btn.textContent = "✨ AI yozsin";
 }
 
+let selectedImageFile = null;
+
+function previewNewProductImage(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  selectedImageFile = file;
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById('npImagePreview').innerHTML = `<img src="${reader.result}" style="width:100%; height:100%; object-fit:cover;">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadImageIfSelected(){
+  if(!selectedImageFile) return null;
+  const formData = new FormData();
+  formData.append('file', selectedImageFile);
+  const res = await fetch('/api/upload-image', { method: 'POST', body: formData });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({detail:"Rasm yuklanmadi"}));
+    throw new Error(err.detail);
+  }
+  const data = await res.json();
+  return data.image_url;
+}
+
 async function submitNewProduct(){
   const name = document.getElementById('npName').value.trim();
   const price = parseFloat(document.getElementById('npPrice').value);
   if(!name || !price){ showStatus("Nomi va narxini kiriting", true); return; }
 
   try{
+    showStatus("Yuklanmoqda...");
+    const imageUrl = await uploadImageIfSelected();
+
     await fetch('/api/products', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -369,14 +645,18 @@ async function submitNewProduct(){
         stock: parseInt(document.getElementById('npStock').value) || 0,
         description: document.getElementById('npDescription').value.trim() || null,
         category_id: parseInt(document.getElementById('npCategory').value) || null,
+        image_url: imageUrl,
       }),
     });
     showStatus("✅ Mahsulot qo'shildi!");
     ['npName','npPrice','npStock','npSize','npColor','npDescription'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('npImageFile').value = '';
+    document.getElementById('npImagePreview').innerHTML = '🖼️';
+    selectedImageFile = null;
     loadInventory();
   } catch(e){
     console.error(e);
-    showStatus("⚠️ Mahsulot qo'shilmadi", true);
+    showStatus("⚠️ Mahsulot qo'shilmadi: " + e.message, true);
   }
 }
 
