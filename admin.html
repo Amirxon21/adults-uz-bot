@@ -287,6 +287,17 @@
           <div class="page-sub">Barcha faol mahsulotlar</div>
         </div>
       </div>
+
+      <!-- Kategoriyalar boshqaruvi -->
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-title">Kategoriyalar</div>
+        <div id="categoryManageList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+        <div style="display:flex; gap:8px;">
+          <input id="newCategoryName" placeholder="Yangi kategoriya nomi" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--paper); font-family:'Inter';">
+          <button onclick="addCategoryManaged()" style="background:var(--teal); border:none; border-radius:10px; padding:0 18px; color:#092420; font-weight:700; cursor:pointer;">+ Qo'shish</button>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="panel-title">
           Faol mahsulotlar
@@ -301,6 +312,30 @@
       </div>
     </div>
     <!-- /page-katalog -->
+
+    <!-- Mahsulotni tahrirlash modali -->
+    <div id="editModalBackdrop" style="display:none; position:fixed; inset:0; background:rgba(10,11,16,.7); z-index:100; align-items:center; justify-content:center;">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; width:420px; max-width:90vw; max-height:85vh; overflow-y:auto;">
+        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.1rem; margin-bottom:16px;">Mahsulotni tahrirlash</div>
+        <input type="hidden" id="editId">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <input id="editName" placeholder="Nomi" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="editPrice" type="number" placeholder="Narx" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <div style="display:flex; gap:10px;">
+            <input id="editSize" placeholder="O'lcham" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+            <input id="editColor" placeholder="Rang" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          </div>
+          <input id="editStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <textarea id="editDescription" placeholder="Tavsif" rows="2" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
+          <input id="editImageUrl" placeholder="Rasm URL" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button onclick="closeEditModal()" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px; color:var(--paper); cursor:pointer;">Bekor qilish</button>
+          <button onclick="saveProductEdit()" style="flex:1; background:var(--teal); border:none; border-radius:10px; padding:11px; color:#092420; font-weight:700; cursor:pointer;">Saqlash</button>
+        </div>
+        <div id="editStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
+      </div>
+    </div>
 
     <!-- ============ SOZLAMALAR SAHIFASI ============ -->
     <div id="page-sozlamalar" class="page">
@@ -337,7 +372,7 @@ const PAGE_LOADERS = {
   ombor: () => { loadInventory(); },
   buyurtmalar: () => { loadOrders(); },
   mijozlar: () => { loadCustomers(); },
-  katalog: () => { loadCatalogPage(); },
+  katalog: () => { loadCatalogPage(); loadCategoryManagement(); },
   sozlamalar: () => {},
 };
 
@@ -517,11 +552,14 @@ async function loadCustomers(){
   }
 }
 
+let catalogProductsCache = [];
+
 async function loadCatalogPage(){
   const body = document.getElementById('catalogBody');
   body.innerHTML = `<tr><td colspan="5" class="empty-row">Yuklanmoqda...</td></tr>`;
   try{
     const products = await apiGet('/api/products?limit=200');
+    catalogProductsCache = products;
     if(products.length === 0){
       body.innerHTML = `<tr><td colspan="5" class="empty-row">Hali mahsulot yo'q</td></tr>`;
       document.getElementById('catalogSummary').textContent = "";
@@ -533,13 +571,67 @@ async function loadCatalogPage(){
         <td class="mono" style="color:var(--teal);">${money(p.price)}</td>
         <td class="mono" style="color:var(--muted);">${[p.size, p.color].filter(Boolean).join(' / ') || '—'}</td>
         <td class="mono">${p.stock}</td>
-        <td><button onclick="deactivateProduct(${p.id})" style="background:rgba(226,87,76,.12); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">O'chirish</button></td>
+        <td style="display:flex; gap:6px;">
+          <button onclick="openEditModal(${p.id})" style="background:rgba(34,195,171,.12); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">Tahrirlash</button>
+          <button onclick="deactivateProduct(${p.id})" style="background:rgba(226,87,76,.12); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">O'chirish</button>
+        </td>
       </tr>
     `).join('');
     document.getElementById('catalogSummary').textContent = `${products.length} ta faol mahsulot`;
   } catch(e){
     console.error(e);
     body.innerHTML = `<tr><td colspan="5" class="empty-row" style="color:var(--danger);">Katalog yuklanmadi</td></tr>`;
+  }
+}
+
+function openEditModal(productId){
+  const p = catalogProductsCache.find(x => x.id === productId);
+  if(!p) return;
+  document.getElementById('editId').value = p.id;
+  document.getElementById('editName').value = p.name || '';
+  document.getElementById('editPrice').value = p.price || '';
+  document.getElementById('editSize').value = p.size || '';
+  document.getElementById('editColor').value = p.color || '';
+  document.getElementById('editStock').value = p.stock ?? '';
+  document.getElementById('editDescription').value = p.description || '';
+  document.getElementById('editImageUrl').value = p.image_url || '';
+  document.getElementById('editStatus').textContent = '';
+  document.getElementById('editModalBackdrop').style.display = 'flex';
+}
+
+function closeEditModal(){
+  document.getElementById('editModalBackdrop').style.display = 'none';
+}
+
+async function saveProductEdit(){
+  const id = document.getElementById('editId').value;
+  const statusEl = document.getElementById('editStatus');
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = 'Saqlanmoqda...';
+  try{
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name: document.getElementById('editName').value.trim(),
+        price: parseFloat(document.getElementById('editPrice').value),
+        size: document.getElementById('editSize').value.trim() || null,
+        color: document.getElementById('editColor').value.trim() || null,
+        stock: parseInt(document.getElementById('editStock').value) || 0,
+        description: document.getElementById('editDescription').value.trim() || null,
+        image_url: document.getElementById('editImageUrl').value.trim() || null,
+      }),
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({detail:'Xatolik'}));
+      throw new Error(err.detail);
+    }
+    closeEditModal();
+    loadCatalogPage();
+  } catch(e){
+    console.error(e);
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = "⚠️ Saqlanmadi: " + e.message;
   }
 }
 
@@ -551,6 +643,75 @@ async function deactivateProduct(id){
   } catch(e){
     console.error(e);
     alert("O'chirib bo'lmadi");
+  }
+}
+
+/* ---------- Kategoriya boshqaruvi ---------- */
+async function loadCategoryManagement(){
+  const wrap = document.getElementById('categoryManageList');
+  try{
+    const cats = await apiGet('/api/categories');
+    if(cats.length === 0){
+      wrap.innerHTML = `<div style="color:var(--muted); font-size:.85rem;">Hali kategoriya yo'q</div>`;
+      return;
+    }
+    wrap.innerHTML = cats.map(c => `
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input value="${c.name}" id="catname-${c.id}" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
+        <button onclick="renameCategoryManaged(${c.id})" style="background:rgba(34,195,171,.12); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">Saqlash</button>
+        <button onclick="deleteCategoryManaged(${c.id})" style="background:rgba(226,87,76,.12); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">O'chirish</button>
+      </div>
+    `).join('');
+  } catch(e){
+    console.error(e);
+    wrap.innerHTML = `<div style="color:var(--danger); font-size:.85rem;">Yuklanmadi</div>`;
+  }
+}
+
+async function addCategoryManaged(){
+  const input = document.getElementById('newCategoryName');
+  const name = input.value.trim();
+  if(!name) return;
+  try{
+    await fetch(`/api/categories?name=${encodeURIComponent(name)}`, { method: 'POST' });
+    input.value = '';
+    loadCategoryManagement();
+    loadCategoryOptions();
+  } catch(e){
+    console.error(e);
+    alert("Kategoriya qo'shilmadi");
+  }
+}
+
+async function renameCategoryManaged(id){
+  const newName = document.getElementById(`catname-${id}`).value.trim();
+  if(!newName) return;
+  try{
+    const res = await fetch(`/api/categories/${id}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name: newName}),
+    });
+    if(!res.ok) throw new Error();
+    loadCategoryManagement();
+    loadCategoryOptions();
+  } catch(e){
+    alert("Nomi o'zgartirilmadi");
+  }
+}
+
+async function deleteCategoryManaged(id){
+  if(!confirm("Bu kategoriyani o'chirishga ishonchingiz komilmi?")) return;
+  try{
+    const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({detail:'Xatolik'}));
+      throw new Error(err.detail);
+    }
+    loadCategoryManagement();
+    loadCategoryOptions();
+  } catch(e){
+    alert("⚠️ " + e.message);
   }
 }
 
