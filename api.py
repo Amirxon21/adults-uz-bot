@@ -183,6 +183,21 @@ class ProductCreate(BaseModel):
     category_id: Optional[int] = None
 
 
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    size: Optional[str] = None
+    color: Optional[str] = None
+    stock: Optional[int] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    category_id: Optional[int] = None
+
+
+class CategoryRename(BaseModel):
+    name: str
+
+
 class CategoryOut(BaseModel):
     id: int
     name: str
@@ -342,6 +357,16 @@ async def api_deactivate_product(product_id: int, _: bool = Depends(verify_admin
     return {"ok": True}
 
 
+@app.patch("/api/products/{product_id}", response_model=ProductOut)
+async def api_update_product(product_id: int, payload: ProductUpdate, _: bool = Depends(verify_admin)):
+    """Mavjud mahsulotning narxi, qoldig'i, nomi va h.k. ni tahrirlash uchun."""
+    product = await db.update_product(product_id, **payload.model_dump(exclude_unset=True))
+    if product is None:
+        raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
+    logger.info(f"Mahsulot tahrirlandi: #{product_id}")
+    return product
+
+
 # ---------------------------------------------------------------------------
 # Kategoriyalar
 # ---------------------------------------------------------------------------
@@ -354,6 +379,23 @@ async def api_list_categories():
 @app.post("/api/categories", response_model=CategoryOut)
 async def api_add_category(name: str, _: bool = Depends(verify_admin)):
     return await db.add_category(name)
+
+
+@app.patch("/api/categories/{category_id}", response_model=CategoryOut)
+async def api_rename_category(category_id: int, payload: CategoryRename, _: bool = Depends(verify_admin)):
+    category = await db.rename_category(category_id, payload.name)
+    if category is None:
+        raise HTTPException(status_code=404, detail="Kategoriya topilmadi")
+    return category
+
+
+@app.delete("/api/categories/{category_id}")
+async def api_delete_category(category_id: int, _: bool = Depends(verify_admin)):
+    try:
+        await db.delete_category(category_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------

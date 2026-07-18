@@ -258,6 +258,48 @@ async def update_stock(product_id: int, quantity_change: int) -> Optional[Produc
         return product
 
 
+async def update_product(
+    product_id: int,
+    name: Optional[str] = None,
+    price: Optional[float] = None,
+    size: Optional[str] = None,
+    color: Optional[str] = None,
+    stock: Optional[int] = None,
+    description: Optional[str] = None,
+    image_url: Optional[str] = None,
+    category_id: Optional[int] = None,
+) -> Optional[Product]:
+    """
+    Mavjud mahsulotning maydonlarini yangilaydi. Faqat berilgan (None bo'lmagan)
+    maydonlar o'zgartiriladi — qolganlari o'z holicha qoladi.
+    """
+    async with async_session() as session:
+        product = await session.get(Product, product_id)
+        if product is None:
+            return None
+
+        if name is not None:
+            product.name = name
+        if price is not None:
+            product.price = price
+        if size is not None:
+            product.size = size
+        if color is not None:
+            product.color = color
+        if stock is not None:
+            product.stock = stock
+        if description is not None:
+            product.description = description
+        if image_url is not None:
+            product.image_url = image_url
+        if category_id is not None:
+            product.category_id = category_id
+
+        await session.commit()
+        await session.refresh(product)
+        return product
+
+
 async def deactivate_product(product_id: int) -> None:
     """Mahsulotni o'chirmasdan, faqat faol emas deb belgilaydi (soft delete)."""
     async with async_session() as session:
@@ -432,6 +474,41 @@ async def list_categories() -> Sequence[Category]:
     async with async_session() as session:
         result = await session.execute(select(Category).order_by(Category.name))
         return result.scalars().all()
+
+
+async def rename_category(category_id: int, new_name: str) -> Optional[Category]:
+    """Kategoriya nomini o'zgartiradi."""
+    async with async_session() as session:
+        category = await session.get(Category, category_id)
+        if category is None:
+            return None
+        category.name = new_name
+        await session.commit()
+        await session.refresh(category)
+        return category
+
+
+async def delete_category(category_id: int) -> None:
+    """
+    Kategoriyani o'chiradi. Agar shu kategoriyaga tegishli mahsulotlar mavjud
+    bo'lsa, ValueError chiqaradi (avval mahsulotlarni boshqa kategoriyaga
+    ko'chirish yoki o'chirish kerak).
+    """
+    async with async_session() as session:
+        result = await session.execute(
+            select(func.count(Product.id)).where(Product.category_id == category_id)
+        )
+        product_count = result.scalar_one()
+        if product_count > 0:
+            raise ValueError(
+                f"Bu kategoriyada {product_count} ta mahsulot bor — avval ularni "
+                f"boshqa kategoriyaga o'tkazing yoki o'chiring."
+            )
+
+        category = await session.get(Category, category_id)
+        if category is not None:
+            await session.delete(category)
+            await session.commit()
 
 
 # ---------------------------------------------------------------------------
