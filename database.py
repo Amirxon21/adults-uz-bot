@@ -53,12 +53,24 @@ if DATABASE_URL.startswith("postgres://"):
 elif DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# Ko'p provayderlar manzilga "?sslmode=require" qo'shadi, lekin asyncpg buni
-# to'g'ridan-to'g'ri tushunmaydi — shuning uchun ajratib olib, alohida beramiz.
+# Ko'p provayderlar (Neon, Supabase) manzilga "?sslmode=require&channel_binding=require"
+# kabi bir nechta parametr qo'shadi, lekin asyncpg buларни to'g'ridan-to'g'ri tushunmaydi.
+# Shuning uchun URL'ni to'g'ri (urllib orqali) tahlil qilib, bu parametrlarni ajratib
+# olamiz va asyncpg'ga mos "connect_args" sifatida beramiz — oddiy matn almashtirish
+# (string replace) turli provayderlarning parametr tartibida xato qilishi mumkin edi.
 connect_args = {}
-if "postgresql+asyncpg" in DATABASE_URL and "sslmode=require" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("?sslmode=require", "").replace("&sslmode=require", "")
-    connect_args = {"ssl": True}
+if DATABASE_URL.startswith("postgresql+asyncpg"):
+    from urllib.parse import urlsplit, urlunsplit, parse_qs, urlencode
+
+    parts = urlsplit(DATABASE_URL)
+    query_params = parse_qs(parts.query)
+
+    if query_params.pop("sslmode", None):
+        connect_args["ssl"] = True
+    query_params.pop("channel_binding", None)  # asyncpg buni qo'llab-quvvatlamaydi
+
+    new_query = urlencode(query_params, doseq=True)
+    DATABASE_URL = urlunsplit((parts.scheme, parts.netloc, parts.path, new_query, parts.fragment))
 
 engine = create_async_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
