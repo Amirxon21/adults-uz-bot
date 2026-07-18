@@ -484,9 +484,9 @@ function renderCatalog(){
   const grid = document.getElementById('productGrid');
   grid.innerHTML = list.map(p => `
     <div class="card" onclick="openProduct(${p.id})">
-      <div class="card-img" style="background:linear-gradient(150deg, var(--surface-2), var(--surface));">
+      <div class="card-img" style="background:${p.image_url ? `url('${p.image_url}') center/cover` : 'linear-gradient(150deg, var(--surface-2), var(--surface))'};">
         ${p.stock === 0 ? '<div class="card-tag" style="color:var(--danger); border-color:var(--danger);">TUGADI</div>' : (p.stock<=3 ? `<div class="card-tag">${p.stock} DONA QOLDI</div>` : '')}
-        <span>${p.emoji}</span>
+        ${p.image_url ? '' : `<span>${p.emoji}</span>`}
       </div>
       <div class="card-body">
         <div class="card-name">${p.name}</div>
@@ -512,7 +512,9 @@ function quickAdd(id){
 function openProduct(id){
   currentProduct = PRODUCTS.find(p=>p.id===id);
   qty = 1;
-  document.getElementById('sheetImg').innerHTML = `<span style="font-size:4rem; background:linear-gradient(150deg, var(--surface-2), var(--surface)); width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:16px;">${currentProduct.emoji}</span>`;
+  document.getElementById('sheetImg').innerHTML = currentProduct.image_url
+    ? `<img src="${currentProduct.image_url}" style="width:100%; height:100%; object-fit:cover; border-radius:16px;">`
+    : `<span style="font-size:4rem; background:linear-gradient(150deg, var(--surface-2), var(--surface)); width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:16px;">${currentProduct.emoji}</span>`;
   document.getElementById('sheetTitle').textContent = currentProduct.name;
   document.getElementById('sheetPrice').textContent = money(currentProduct.price);
   document.getElementById('sheetDesc').textContent = currentProduct.description || "";
@@ -560,7 +562,7 @@ function renderCart(){
     const opts = [p.size, p.color].filter(Boolean).join(' · ');
     return `
     <div class="cart-item">
-      <div class="cart-thumb">${p.emoji}</div>
+      <div class="cart-thumb" style="${p.image_url ? `background:url('${p.image_url}') center/cover;` : ''}">${p.image_url ? '' : p.emoji}</div>
       <div class="cart-info">
         <div class="cart-name">${p.name}</div>
         <div class="cart-opts">${opts}</div>
