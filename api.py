@@ -368,6 +368,32 @@ async def api_update_product(product_id: int, payload: ProductUpdate, _: bool = 
 
 
 # ---------------------------------------------------------------------------
+# Mahsulot galereyasi (bir nechta rasm)
+# ---------------------------------------------------------------------------
+
+class ProductImageIn(BaseModel):
+    url: str
+
+
+@app.get("/api/products/{product_id}/images")
+async def api_list_product_images(product_id: int):
+    images = await db.list_product_images(product_id)
+    return [{"id": img.id, "url": img.url, "position": img.position} for img in images]
+
+
+@app.post("/api/products/{product_id}/images")
+async def api_add_product_image(product_id: int, payload: ProductImageIn, _: bool = Depends(verify_admin)):
+    image = await db.add_product_image(product_id, payload.url)
+    return {"id": image.id, "url": image.url, "position": image.position}
+
+
+@app.delete("/api/products/{product_id}/images/{image_id}")
+async def api_delete_product_image(product_id: int, image_id: int, _: bool = Depends(verify_admin)):
+    await db.delete_product_image(image_id)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
 # Kategoriyalar
 # ---------------------------------------------------------------------------
 

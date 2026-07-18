@@ -121,6 +121,22 @@ class Product(Base):
     )
 
     category: Mapped[Optional["Category"]] = relationship(back_populates="products")
+    images: Mapped[list["ProductImage"]] = relationship(back_populates="product", cascade="all, delete-orphan")
+
+
+class ProductImage(Base):
+    """
+    Mahsulotning asosiy rasmidan (Product.image_url) tashqari qo'shimcha
+    rasmlari — galereya sifatida ko'rsatish uchun.
+    """
+    __tablename__ = "product_images"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    product: Mapped["Product"] = relationship(back_populates="images")
 
 
 class User(Base):
@@ -256,6 +272,43 @@ async def update_stock(product_id: int, quantity_change: int) -> Optional[Produc
         await session.commit()
         await session.refresh(product)
         return product
+
+
+async def add_product_image(product_id: int, url: str) -> ProductImage:
+    """Mahsulotga qo'shimcha rasm (galereya) qo'shadi."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(func.coalesce(func.max(ProductImage.position), -1)).where(
+                ProductImage.product_id == product_id
+            )
+        )
+        next_position = result.scalar_one() + 1
+
+        image = ProductImage(product_id=product_id, url=url, position=next_position)
+        session.add(image)
+        await session.commit()
+        await session.refresh(image)
+        return image
+
+
+async def list_product_images(product_id: int) -> Sequence[ProductImage]:
+    """Mahsulotning barcha qo'shimcha rasmlarini tartib bo'yicha qaytaradi."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(ProductImage)
+            .where(ProductImage.product_id == product_id)
+            .order_by(ProductImage.position)
+        )
+        return result.scalars().all()
+
+
+async def delete_product_image(image_id: int) -> None:
+    """Galereyadan bitta rasmni o'chiradi."""
+    async with async_session() as session:
+        image = await session.get(ProductImage, image_id)
+        if image is not None:
+            await session.delete(image)
+            await session.commit()
 
 
 async def update_product(
@@ -681,9 +734,9 @@ async def get_all_orders(limit: int = 200) -> list[dict]:
 
 async def get_all_customers(limit: int = 200) -> list[dict]:
     """
-    Admin panel — 'Mijozlar' sahifasi uchun barcha mijozlarni buyurtmalar
-    soni va jami sarflagan summasi bilan birga qaytaradi (kamida 1 ta
-    buyurtma bergan mijozlar, eng ko'p buyurtma berganidan boshlab).
+    Admin panel — 'Mijozlar' sahifasi uchun BARCHA ro'yxatdan o'tgan
+    foydalanuvchilarni qaytaradi (buyurtma bergan yoki bermagan farqi yo'q),
+    buyurtmalar soni va jami sarflagan summasi bilan birga.
     """
     async with async_session() as session:
         query = (
@@ -693,14 +746,14 @@ async def get_all_customers(limit: int = 200) -> list[dict]:
                 User.instagram_id,
                 User.full_name,
                 User.phone,
-                func.count(Order.id).label("order_count"),
-                func.sum(Order.total_price).label("total_spent"),
+                User.created_at,
+                func.count(Order.id).filter(Order.status != OrderStatus.CANCELLED).label("order_count"),
+                func.sum(Order.total_price).filter(Order.status != OrderStatus.CANCELLED).label("total_spent"),
                 func.max(Order.created_at).label("last_order_at"),
             )
-            .join(Order, Order.user_id == User.id)
-            .where(Order.status != OrderStatus.CANCELLED)
-            .group_by(User.id, User.telegram_id, User.instagram_id, User.full_name, User.phone)
-            .order_by(func.count(Order.id).desc())
+            .outerjoin(Order, Order.user_id == User.id)
+            .group_by(User.id, User.telegram_id, User.instagram_id, User.full_name, User.phone, User.created_at)
+            .order_by(func.count(Order.id).desc(), User.created_at.desc())
             .limit(limit)
         )
         result = await session.execute(query)

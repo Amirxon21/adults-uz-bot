@@ -1,0 +1,36 @@
+# ============================================================
+# adults.uz — muhit o'zgaruvchilari
+# Bu faylni hech qachon GitHub'ga yubormang (.gitignore allaqachon bloklaydi)
+# ============================================================
+
+# BotFather'dan olingan bot tokeningiz
+BOT_TOKEN=
+
+# Hozirgi Render manzilingiz + /shop
+SHOP_URL=
+
+# Admin panelga kirish (HTTP Basic Auth)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=
+
+# --- DOIMIY BAZA (PostgreSQL) ---
+# Neon.tech yoki Supabase'dan olingan ulanish manzili.
+# Bo'sh qoldirsangiz, vaqtinchalik SQLite ishlatiladi (Render'da ma'lumot yo'qoladi!)
+DATABASE_URL=
+
+# --- DOIMIY RASM XOSTING ---
+# Variant 1 (tavsiya etiladi — O'zbekistonda ishlaydi): ImgBB
+# https://api.imgbb.com/ dan bepul API kalit oling
+IMGBB_API_KEY=
+
+# Variant 2 (agar mamlakatingizda ishlasa): Cloudinary
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_UPLOAD_PRESET=
+
+# AI funksiyalari uchun (Google Gemini)
+# https://aistudio.google.com/apikey dan bepul API kalit oling
+GEMINI_API_KEY=
+
+# Instagram integratsiyasi uchun (ixtiyoriy)
+INSTAGRAM_VERIFY_TOKEN=adults_uz_verify
+INSTAGRAM_PAGE_ACCESS_TOKEN=

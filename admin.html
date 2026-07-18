@@ -211,8 +211,15 @@
           <select id="npCategory" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';"></select>
           <input id="npPrice" type="number" placeholder="Narx (so'm)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           <input id="npStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-          <input id="npSize" placeholder="O'lcham(lar) — vergul bilan: L, M, XL" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
-          <input id="npColor" placeholder="Rang(lar) — vergul bilan: Qora, Ko'k" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <div>
+            <input id="npSize" placeholder="O'lcham (bittadan). Bir nechtasi kerak bo'lsa: L, M, XL" oninput="updateVariantPreview()" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          </div>
+          <div>
+            <input id="npColor" placeholder="Rang (bittadan). Bir nechtasi kerak bo'lsa: Qora, Ko'k" oninput="updateVariantPreview()" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          </div>
+        </div>
+        <div id="variantPreviewBox" style="background:rgba(34,195,171,.08); border:1px solid var(--teal); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:.82rem; color:var(--teal);">
+          ℹ️ 1 ta mahsulot yaratiladi (o'lcham/rang bo'sh yoki bitta bo'lsa)
         </div>
         <div style="margin-bottom:12px;">
           <label style="display:block; font-size:.78rem; color:var(--muted); margin-bottom:6px;">Mahsulot rasmi</label>
@@ -327,7 +334,16 @@
           </div>
           <input id="editStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           <textarea id="editDescription" placeholder="Tavsif" rows="2" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
-          <input id="editImageUrl" placeholder="Rasm URL" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+          <input id="editImageUrl" placeholder="Asosiy rasm URL (kartochkada ko'rinadigan)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+
+          <div style="border-top:1px solid var(--line); margin-top:6px; padding-top:12px;">
+            <label style="display:block; font-size:.78rem; color:var(--muted); margin-bottom:8px;">Qo'shimcha rasmlar (galereya)</label>
+            <div id="galleryList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:8px;">
+              <input id="newGalleryUrl" placeholder="Yangi rasm URL" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
+              <button onclick="addGalleryImage()" style="background:var(--teal); border:none; border-radius:10px; padding:0 14px; color:#092420; font-weight:700; cursor:pointer; font-size:.85rem;">+ Qo'shish</button>
+            </div>
+          </div>
         </div>
         <div style="display:flex; gap:8px; margin-top:16px;">
           <button onclick="closeEditModal()" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px; color:var(--paper); cursor:pointer;">Bekor qilish</button>
@@ -597,6 +613,55 @@ function openEditModal(productId){
   document.getElementById('editImageUrl').value = p.image_url || '';
   document.getElementById('editStatus').textContent = '';
   document.getElementById('editModalBackdrop').style.display = 'flex';
+  loadGalleryImages(p.id);
+}
+
+async function loadGalleryImages(productId){
+  const wrap = document.getElementById('galleryList');
+  wrap.innerHTML = `<div style="color:var(--muted); font-size:.78rem;">Yuklanmoqda...</div>`;
+  try{
+    const images = await apiGet(`/api/products/${productId}/images`);
+    if(images.length === 0){
+      wrap.innerHTML = `<div style="color:var(--muted); font-size:.78rem;">Hali qo'shimcha rasm yo'q</div>`;
+      return;
+    }
+    wrap.innerHTML = images.map(img => `
+      <div style="position:relative; width:64px; height:64px;">
+        <img src="${img.url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid var(--line);">
+        <button onclick="removeGalleryImage(${productId}, ${img.id})" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:var(--danger); border:none; color:white; font-size:.7rem; cursor:pointer; line-height:1;">✕</button>
+      </div>
+    `).join('');
+  } catch(e){
+    console.error(e);
+    wrap.innerHTML = `<div style="color:var(--danger); font-size:.78rem;">Yuklanmadi</div>`;
+  }
+}
+
+async function addGalleryImage(){
+  const productId = document.getElementById('editId').value;
+  const input = document.getElementById('newGalleryUrl');
+  const url = input.value.trim();
+  if(!url) return;
+  try{
+    await fetch(`/api/products/${productId}/images`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url}),
+    });
+    input.value = '';
+    loadGalleryImages(productId);
+  } catch(e){
+    alert("Rasm qo'shilmadi");
+  }
+}
+
+async function removeGalleryImage(productId, imageId){
+  try{
+    await fetch(`/api/products/${productId}/images/${imageId}`, { method: 'DELETE' });
+    loadGalleryImages(productId);
+  } catch(e){
+    alert("Rasm o'chirilmadi");
+  }
 }
 
 function closeEditModal(){
@@ -765,6 +830,24 @@ async function generateAIDescription(){
 
 let selectedImageFile = null;
 
+function updateVariantPreview(){
+  const sizesRaw = document.getElementById('npSize').value.trim();
+  const colorsRaw = document.getElementById('npColor').value.trim();
+  const sizeCount = sizesRaw ? sizesRaw.split(',').map(s=>s.trim()).filter(Boolean).length : 1;
+  const colorCount = colorsRaw ? colorsRaw.split(',').map(c=>c.trim()).filter(Boolean).length : 1;
+  const total = sizeCount * colorCount;
+  const box = document.getElementById('variantPreviewBox');
+  if(total <= 1){
+    box.innerHTML = "ℹ️ 1 ta mahsulot yaratiladi";
+    box.style.color = 'var(--teal)';
+    box.style.borderColor = 'var(--teal)';
+  } else {
+    box.innerHTML = `⚠️ Diqqat: ${sizeCount} ta o'lcham × ${colorCount} ta rang = <b>${total} ta alohida mahsulot</b> yaratiladi (har biri bir xil nom/narx/rasm bilan, lekin alohida o'lcham-rang birikmasida)`;
+    box.style.color = 'var(--mustard)';
+    box.style.borderColor = 'var(--mustard)';
+  }
+}
+
 function previewNewProductImage(event){
   const file = event.target.files[0];
   if(!file) return;
@@ -805,6 +888,12 @@ async function submitNewProduct(){
   const categoryId = parseInt(document.getElementById('npCategory').value) || null;
   const manualImageUrl = document.getElementById('npImageUrl').value.trim();
 
+  const totalVariants = sizes.length * colors.length;
+  if(totalVariants > 1){
+    const confirmed = confirm(`Diqqat: ${sizes.length} ta o'lcham × ${colors.length} ta rang = ${totalVariants} ta ALOHIDA mahsulot yaratiladi. Davom etasizmi?`);
+    if(!confirmed) return;
+  }
+
   try{
     showStatus("Yuklanmoqda...");
     // Rasm: avval fayl tanlangan bo'lsa yuklaymiz, aks holda qo'lda kiritilgan URL ishlatiladi
@@ -832,6 +921,7 @@ async function submitNewProduct(){
     document.getElementById('npImageFile').value = '';
     document.getElementById('npImagePreview').innerHTML = '🖼️';
     selectedImageFile = null;
+    updateVariantPreview();
     loadInventory();
   } catch(e){
     console.error(e);
