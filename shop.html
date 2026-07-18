@@ -106,7 +106,7 @@
   }
   .card:active{transform:scale(.97);}
   .card-img{
-    height:150px; display:flex; align-items:center; justify-content:center; font-size:2.4rem;
+    aspect-ratio:1/1; width:100%; display:flex; align-items:center; justify-content:center; font-size:2.4rem;
     position:relative; overflow:hidden;
   }
   .card-tag{
@@ -140,7 +140,7 @@
   }
   .sheet.show{transform:translateY(0);}
   .sheet-handle{width:36px; height:4px; background:var(--line); border-radius:2px; margin:10px auto;}
-  .sheet-img{height:220px; margin:0 18px 6px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:4rem;}
+  .sheet-img{aspect-ratio:1/1; width:calc(100% - 36px); margin:0 18px 6px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:4rem;}
   .sheet-content{padding:6px 20px 0;}
   .sheet-title{font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem; margin-bottom:4px;}
   .sheet-price{font-family:'JetBrains Mono'; color:var(--teal); font-size:1.2rem; font-weight:600; margin-bottom:14px;}
