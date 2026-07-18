@@ -1,20 +1,19 @@
 """
-adults.uz — AI funksiyalari (Claude API orqali)
+adults.uz — AI funksiyalari (Google Gemini API orqali)
 
 Bu modul uchta AI funksiyani ta'minlaydi:
-  1. chat_recommend()       — mijoz bilan suhbat, katalogdan mahsulot tavsiya qilish
+  1. chat_recommend()         — mijoz bilan suhbat, katalogdan mahsulot tavsiya qilish
   2. analyze_clothing_image() — mijoz yuborgan rasmni tahlil qilib, qidiruv
                                  kalit so'zlarini chiqarish (rasm orqali qidiruv)
-  3. generate_description() — admin uchun mahsulot tavsifini avtomatik yozish
-  4. parse_order_intent()   — Instagram DM matnidan buyurtma niyatini aniqlash
+  3. generate_description()   — admin uchun mahsulot tavsifini avtomatik yozish
+  4. parse_order_intent()     — Instagram DM matnidan buyurtma niyatini aniqlash
 
 O'rnatish:
-    pip install anthropic
+    pip install httpx  (allaqachon requirements.txt'da bor)
 
-Muhim: ANTHROPIC_API_KEY muhit o'zgaruvchisini albatta o'rnating:
-    Windows (PowerShell):  $env:ANTHROPIC_API_KEY="sk-ant-..."
-    Linux/Mac:             export ANTHROPIC_API_KEY="sk-ant-..."
-API kalitni https://console.anthropic.com dan olasiz.
+Muhim: GEMINI_API_KEY muhit o'zgaruvchisini albatta o'rnating:
+    Windows (PowerShell):  $env:GEMINI_API_KEY="AIza..."
+API kalitni https://aistudio.google.com/apikey dan olasiz.
 """
 
 from __future__ import annotations
@@ -23,24 +22,22 @@ import json
 import os
 from typing import Optional
 
-import anthropic
+import httpx
 
-MODEL = "claude-sonnet-4-5"  # muvozanatli tezlik/sifat uchun
+# gemini-3.5-flash — Google'ning joriy, tez va arzon modeli (2026-yil holatiga ko'ra
+# eng barqaror tanlov; eski "gemini-2.0-flash" allaqachon o'chirilgan).
+MODEL = "gemini-3.5-flash"
+API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
-_client: Optional[anthropic.Anthropic] = None
 
-
-def _get_client() -> anthropic.Anthropic:
-    global _client
-    if _client is None:
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise RuntimeError(
-                "ANTHROPIC_API_KEY muhit o'zgaruvchisi topilmadi. "
-                "console.anthropic.com dan kalit oling va uni sozlang."
-            )
-        _client = anthropic.Anthropic(api_key=api_key)
-    return _client
+def _get_api_key() -> str:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY muhit o'zgaruvchisi topilmadi. "
+            "https://aistudio.google.com/apikey dan kalit oling va uni sozlang."
+        )
+    return api_key
 
 
 def _extract_json(text: str) -> dict:
@@ -57,6 +54,32 @@ def _extract_json(text: str) -> dict:
     return json.loads(text[start:end + 1])
 
 
+def _call_gemini(contents: list[dict], system_instruction: Optional[str] = None, max_tokens: int = 500) -> str:
+    """Gemini API'ga so'rov yuboradi va matn javobini qaytaradi."""
+    api_key = _get_api_key()
+    url = f"{API_BASE}/{MODEL}:generateContent?key={api_key}"
+
+    body = {
+        "contents": contents,
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+    }
+    if system_instruction:
+        body["systemInstruction"] = {"parts": [{"text": system_instruction}]}
+
+    with httpx.Client(timeout=30.0) as client:
+        res = client.post(url, json=body)
+
+    if res.status_code != 200:
+        raise RuntimeError(f"Gemini API xatosi: {res.status_code} — {res.text[:300]}")
+
+    data = res.json()
+    try:
+        parts = data["candidates"][0]["content"]["parts"]
+        return "".join(p.get("text", "") for p in parts)
+    except (KeyError, IndexError):
+        raise RuntimeError(f"Gemini'dan kutilmagan javob formati: {data}")
+
+
 # ---------------------------------------------------------------------------
 # 1. Chatbot — mahsulot tavsiya qilish
 # ---------------------------------------------------------------------------
@@ -66,13 +89,8 @@ def chat_recommend(message: str, catalog: list[dict], history: Optional[list[dic
     Mijozning xabariga javob beradi va agar mos kelsa, katalogdan mahsulot(lar)
     tavsiya qiladi.
 
-    catalog: [{"id":1, "name":"...", "price":99000, "category":"Futbolka",
-               "color":"Qora", "size":"L", "stock":10}, ...]
-    history: oldingi xabarlar [{"role":"user"/"assistant", "content":"..."}]
-
     Qaytaradi: {"reply": str, "recommended_product_ids": [int, ...]}
     """
-    client = _get_client()
     history = history or []
 
     catalog_text = "\n".join(
@@ -102,20 +120,16 @@ KATALOG:
 {catalog_text}
 """
 
-    messages = history + [{"role": "user", "content": message}]
+    contents = []
+    for h in history:
+        role = "model" if h.get("role") == "assistant" else "user"
+        contents.append({"role": role, "parts": [{"text": h.get("content", "")}]})
+    contents.append({"role": "user", "parts": [{"text": message}]})
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=500,
-        system=system_prompt,
-        messages=messages,
-    )
-
-    text = "".join(block.text for block in response.content if block.type == "text")
+    text = _call_gemini(contents, system_instruction=system_prompt, max_tokens=500)
     try:
         return _extract_json(text)
     except (ValueError, json.JSONDecodeError):
-        # Modeldan JSON kelmasa ham, mijoz javobsiz qolmasligi uchun zaxira
         return {"reply": text.strip() or "Kechirasiz, javob bera olmadim.", "recommended_product_ids": []}
 
 
@@ -127,37 +141,25 @@ def analyze_clothing_image(image_base64: str, media_type: str = "image/jpeg") ->
     """
     Mijoz yuborgan kiyim rasmini tahlil qiladi va qidiruv uchun kalit
     so'zlarni chiqaradi (kategoriya, rang, uslub).
-
-    Qaytaradi: {"category": str, "color": str, "keywords": [str, ...], "description": str}
     """
-    client = _get_client()
-
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=300,
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": media_type, "data": image_base64},
-                },
-                {
-                    "type": "text",
-                    "text": (
-                        "Bu rasmda qanday kiyim bor? Faqat quyidagi JSON formatida "
-                        "javob ber, boshqa hech narsa yozma:\n"
-                        '{"category": "Futbolka/Ko\'ylak/Shim/Kurtka/Aksessuar dan biri", '
-                        '"color": "asosiy rang (o\'zbekcha)", '
-                        '"keywords": ["qidiruv uchun 3-5 ta kalit so\'z, o\'zbekcha"], '
-                        '"description": "1 gapli tavsif"}'
-                    ),
-                },
-            ],
-        }],
+    prompt_text = (
+        "Bu rasmda qanday kiyim bor? Faqat quyidagi JSON formatida "
+        "javob ber, boshqa hech narsa yozma:\n"
+        '{"category": "Futbolka/Ko\'ylak/Shim/Kurtka/Aksessuar dan biri", '
+        '"color": "asosiy rang (o\'zbekcha)", '
+        '"keywords": ["qidiruv uchun 3-5 ta kalit so\'z, o\'zbekcha"], '
+        '"description": "1 gapli tavsif"}'
     )
 
-    text = "".join(block.text for block in response.content if block.type == "text")
+    contents = [{
+        "role": "user",
+        "parts": [
+            {"inline_data": {"mime_type": media_type, "data": image_base64}},
+            {"text": prompt_text},
+        ],
+    }]
+
+    text = _call_gemini(contents, max_tokens=300)
     try:
         return _extract_json(text)
     except (ValueError, json.JSONDecodeError):
@@ -170,12 +172,9 @@ def analyze_clothing_image(image_base64: str, media_type: str = "image/jpeg") ->
 
 def generate_description(name: str, category: str = "", color: str = "", size: str = "") -> str:
     """Admin panel uchun: mahsulot nomi/xususiyatlari asosida sotuvni oshiruvchi tavsif yozadi."""
-    client = _get_client()
-
     prompt = f"""Quyidagi kiyim mahsuloti uchun jozibali, qisqa (1-2 gap) sotuv
-tavsifini o'zbek tilida yoz. Haqiqiy bo'lmagan xususiyatlarni (masalan
-"organik paxta" kabi tekshirilmagan da'volarni) qo'shma — faqat berilgan
-ma'lumotlarga tayan va umumiy jozibali uslubda yoz.
+tavsifini o'zbek tilida yoz. Haqiqiy bo'lmagan xususiyatlarni qo'shma — faqat
+berilgan ma'lumotlarga tayan va umumiy jozibali uslubda yoz.
 
 Mahsulot: {name}
 Kategoriya: {category or "—"}
@@ -184,12 +183,9 @@ O'lcham: {size or "—"}
 
 Faqat tavsif matnini yoz, boshqa hech narsa qo'shma."""
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=150,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "".join(block.text for block in response.content if block.type == "text").strip()
+    contents = [{"role": "user", "parts": [{"text": prompt}]}]
+    text = _call_gemini(contents, max_tokens=150)
+    return text.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -198,18 +194,11 @@ Faqat tavsif matnini yoz, boshqa hech narsa qo'shma."""
 
 def parse_order_intent(message: str, catalog: list[dict]) -> dict:
     """
-    Instagram DM matnidan mijoz nima demoqchi ekanini aniqlaydi:
-    oddiy savol/salom, yoki aniq mahsulot buyurtma qilish niyati.
+    Instagram DM matnidan mijoz nima demoqchi ekanini aniqlaydi.
 
-    Qaytaradi: {
-      "intent": "order" | "question" | "greeting",
-      "product_id": int | None,
-      "quantity": int,
-      "reply": str
-    }
+    Qaytaradi: {"intent": "order"|"question"|"greeting", "product_id": int|None,
+                "quantity": int, "reply": str}
     """
-    client = _get_client()
-
     catalog_text = "\n".join(
         f"- id={p['id']}: {p['name']} ({p.get('color','')}, {p.get('size','')}) "
         f"- {p['price']} so'm, qoldiq: {p['stock']}"
@@ -237,14 +226,8 @@ KATALOG:
 {catalog_text}
 """
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=300,
-        system=system_prompt,
-        messages=[{"role": "user", "content": message}],
-    )
-
-    text = "".join(block.text for block in response.content if block.type == "text")
+    contents = [{"role": "user", "parts": [{"text": message}]}]
+    text = _call_gemini(contents, system_instruction=system_prompt, max_tokens=300)
     try:
         return _extract_json(text)
     except (ValueError, json.JSONDecodeError):
