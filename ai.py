@@ -54,14 +54,21 @@ def _extract_json(text: str) -> dict:
     return json.loads(text[start:end + 1])
 
 
-def _call_gemini(contents: list[dict], system_instruction: Optional[str] = None, max_tokens: int = 500) -> str:
+def _call_gemini(contents: list[dict], system_instruction: Optional[str] = None, max_tokens: int = 800) -> str:
     """Gemini API'ga so'rov yuboradi va matn javobini qaytaradi."""
     api_key = _get_api_key()
     url = f"{API_BASE}/{MODEL}:generateContent?key={api_key}"
 
     body = {
         "contents": contents,
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+        "generationConfig": {
+            "maxOutputTokens": max_tokens,
+            "temperature": 0.7,
+            # "Thinking" rejimini o'chiramiz — aks holda model token limitini
+            # ichki mulohaza uchun sarflab, asosiy javobga joy qolmay, matn
+            # kesilib qolishi mumkin.
+            "thinkingConfig": {"thinkingBudget": 0},
+        },
     }
     if system_instruction:
         body["systemInstruction"] = {"parts": [{"text": system_instruction}]}
@@ -126,7 +133,7 @@ KATALOG:
         contents.append({"role": role, "parts": [{"text": h.get("content", "")}]})
     contents.append({"role": "user", "parts": [{"text": message}]})
 
-    text = _call_gemini(contents, system_instruction=system_prompt, max_tokens=500)
+    text = _call_gemini(contents, system_instruction=system_prompt, max_tokens=800)
     try:
         return _extract_json(text)
     except (ValueError, json.JSONDecodeError):
@@ -159,7 +166,7 @@ def analyze_clothing_image(image_base64: str, media_type: str = "image/jpeg") ->
         ],
     }]
 
-    text = _call_gemini(contents, max_tokens=300)
+    text = _call_gemini(contents, max_tokens=500)
     try:
         return _extract_json(text)
     except (ValueError, json.JSONDecodeError):
@@ -184,7 +191,7 @@ O'lcham: {size or "—"}
 Faqat tavsif matnini yoz, boshqa hech narsa qo'shma."""
 
     contents = [{"role": "user", "parts": [{"text": prompt}]}]
-    text = _call_gemini(contents, max_tokens=150)
+    text = _call_gemini(contents, max_tokens=300)
     return text.strip()
 
 
@@ -227,7 +234,7 @@ KATALOG:
 """
 
     contents = [{"role": "user", "parts": [{"text": message}]}]
-    text = _call_gemini(contents, system_instruction=system_prompt, max_tokens=300)
+    text = _call_gemini(contents, system_instruction=system_prompt, max_tokens=500)
     try:
         return _extract_json(text)
     except (ValueError, json.JSONDecodeError):
