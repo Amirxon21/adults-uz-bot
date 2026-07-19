@@ -415,6 +415,8 @@ document.getElementById('profileId').textContent = "Telegram ID: " + (tgUser?.id
 // Telegram tashqarisida (oddiy brauzerda) sinab ko'rish uchun zaxira ID
 const myTelegramId = tgUser?.id || 999000111;
 const myFullName = tgUser ? `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() : "Test foydalanuvchi";
+const myUsername = tgUser?.username || null;
+const myPhotoUrl = tgUser?.photo_url || null;
 
 let categoryMap = {};   // id -> name
 let categoryNameToId = {}; // name -> id
@@ -793,7 +795,7 @@ function clearImageSearch(){
   // tashrifchilar ham "Mijozlar" ro'yxatida ko'rinadi.
   if(tgUser?.id){
     try{
-      await apiPost('/api/users', {telegram_id: myTelegramId, full_name: myFullName});
+      await apiPost('/api/users', {telegram_id: myTelegramId, full_name: myFullName, username: myUsername, photo_url: myPhotoUrl});
     } catch(e){ console.error("Foydalanuvchini ro'yxatga olishda xato:", e); }
   }
   await loadCategories();

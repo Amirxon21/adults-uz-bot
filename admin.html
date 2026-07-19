@@ -8,53 +8,57 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#14161f; --surface:#1c1f2a; --surface-2:#252938; --line:#323649;
-    --paper:#f3f1ea; --muted:#9a9fb3; --teal:#22c3ab; --mustard:#e8a33d; --danger:#e2574c;
+    --ink:#F7F8FA; --surface:#FFFFFF; --surface-2:#F1F5F9; --line:#E5E7EB;
+    --paper:#0F172A; --muted:#64748B; --teal:#0F766E; --mustard:#B45309; --danger:#DC2626;
+    --shadow:0 1px 2px rgba(15,23,42,.04), 0 1px 1px rgba(15,23,42,.03);
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif;}
-  .mono{font-family:'JetBrains Mono',monospace;}
-  .display{font-family:'Space Grotesk',sans-serif;}
+  body{margin:0; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;}
+  .mono{font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums;}
+  .display{font-family:'Inter',sans-serif; font-weight:700; letter-spacing:-.01em;}
 
   .layout{display:flex; min-height:100vh;}
 
   /* ---- Sidebar ---- */
   aside{
-    width:220px; flex:none; background:var(--surface); border-right:1px solid var(--line);
+    width:224px; flex:none; background:var(--surface); border-right:1px solid var(--line);
     padding:22px 16px; position:sticky; top:0; height:100vh;
   }
-  .brand{font-family:'Space Grotesk'; font-weight:700; font-size:1.2rem; display:flex; align-items:center; gap:8px; margin-bottom:30px;}
-  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--teal); box-shadow:0 0 12px var(--teal);}
+  .brand{font-family:'Inter'; font-weight:700; font-size:1.2rem; display:flex; align-items:center; gap:9px; margin-bottom:28px; padding:0 4px;}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);}
   .nav-item{
-    display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; color:var(--muted);
-    font-size:.87rem; font-weight:600; cursor:pointer; margin-bottom:4px; transition:.15s ease;
+    display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:var(--muted);
+    font-size:.87rem; font-weight:500; cursor:pointer; margin-bottom:2px; transition:.12s ease;
   }
+  .nav-item svg{flex:none; opacity:.85;}
   .nav-item:hover{background:var(--surface-2); color:var(--paper);}
-  .nav-item.active{background:rgba(34,195,171,.14); color:var(--teal);}
+  .nav-item.active{background:rgba(15,118,110,.10); color:var(--teal); font-weight:600;}
+  .nav-item.active svg{opacity:1;}
 
-  main{flex:1; padding:28px 34px; max-width:1180px;}
+  main{flex:1; padding:32px 36px; max-width:1200px;}
   .top-row{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px;}
-  .page-title{font-family:'Space Grotesk'; font-weight:700; font-size:1.6rem;}
+  .page-title{font-family:'Inter'; font-weight:700; font-size:1.5rem; letter-spacing:-.01em;}
   .page-sub{color:var(--muted); font-size:.86rem; margin-top:4px;}
   .date-range{
-    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:.82rem;
-    color:var(--muted); font-family:'JetBrains Mono';
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 14px; font-size:.82rem;
+    color:var(--muted); font-family:'JetBrains Mono'; box-shadow:var(--shadow);
   }
 
   /* ---- KPI cards ---- */
   .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;}
   .kpi-card{
-    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:18px 20px;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px;
+    box-shadow:var(--shadow);
   }
-  .kpi-label{color:var(--muted); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;}
-  .kpi-value{font-family:'Space Grotesk'; font-weight:700; font-size:1.6rem;}
+  .kpi-label{color:var(--muted); font-size:.76rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;}
+  .kpi-value{font-family:'Inter'; font-weight:700; font-size:1.6rem; letter-spacing:-.01em;}
   .kpi-delta{font-size:.78rem; margin-top:6px; font-family:'JetBrains Mono';}
   .up{color:var(--teal);} .down{color:var(--danger);}
 
   /* ---- panels ---- */
   .panel-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:16px; margin-bottom:16px;}
-  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px 22px;}
-  .panel-title{font-family:'Space Grotesk'; font-weight:600; font-size:1rem; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px; box-shadow:var(--shadow);}
+  .panel-title{font-family:'Inter'; font-weight:600; font-size:.95rem; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;}
   .panel-title .tag{font-size:.7rem; color:var(--muted); font-family:'JetBrains Mono'; font-weight:500;}
 
   /* top products bars */
@@ -63,14 +67,14 @@
   .bar-name{font-weight:600;}
   .bar-val{font-family:'JetBrains Mono'; color:var(--muted);}
   .bar-track{height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden;}
-  .bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--teal), #57e4cd);}
+  .bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--teal), #14B8A6);}
 
   /* customers list */
   .cust-row{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line);}
   .cust-row:last-child{border-bottom:none;}
   .cust-avatar{
     width:36px; height:36px; border-radius:50%; background:var(--surface-2); display:flex; align-items:center;
-    justify-content:center; font-weight:700; font-family:'Space Grotesk'; font-size:.85rem; flex:none;
+    justify-content:center; font-weight:700; font-family:'Inter'; font-size:.85rem; flex:none;
   }
   .cust-info{flex:1;}
   .cust-name{font-weight:600; font-size:.87rem;}
@@ -88,15 +92,17 @@
     padding:0 12px 10px; font-weight:600; border-bottom:1px solid var(--line);
   }
   td{padding:12px; font-size:.85rem; border-bottom:1px solid var(--line);}
+  tbody tr{transition:background .1s ease;}
+  tbody tr:hover{background:var(--surface-2);}
   tr:last-child td{border-bottom:none;}
   .prod-cell{display:flex; align-items:center; gap:10px;}
   .prod-emoji{width:34px; height:34px; border-radius:9px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:1.1rem;}
   .stock-badge{
     padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono';
   }
-  .stock-ok{background:rgba(34,195,171,.15); color:var(--teal);}
-  .stock-low{background:rgba(232,163,61,.15); color:var(--mustard);}
-  .stock-out{background:rgba(226,87,76,.15); color:var(--danger);}
+  .stock-ok{background:rgba(15,118,110,.10); color:var(--teal);}
+  .stock-low{background:rgba(180,83,9,.12); color:var(--mustard);}
+  .stock-out{background:rgba(220,38,38,.10); color:var(--danger);}
   .trend{font-family:'JetBrains Mono'; font-size:.8rem;}
 
   /* ---- Page switching ---- */
@@ -105,10 +111,10 @@
 
   /* ---- status badges (buyurtmalar) ---- */
   .status-badge{padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono';}
-  .status-pending{background:rgba(232,163,61,.15); color:var(--mustard);}
-  .status-paid, .status-shipped{background:rgba(34,195,171,.15); color:var(--teal);}
-  .status-delivered{background:rgba(90,200,120,.15); color:#5ac878;}
-  .status-cancelled{background:rgba(226,87,76,.15); color:var(--danger);}
+  .status-pending{background:rgba(180,83,9,.12); color:var(--mustard);}
+  .status-paid, .status-shipped{background:rgba(15,118,110,.10); color:var(--teal);}
+  .status-delivered{background:rgba(21,128,61,.10); color:#15803D;}
+  .status-cancelled{background:rgba(220,38,38,.10); color:var(--danger);}
   select.status-select{
     background:var(--surface-2); border:1px solid var(--line); border-radius:8px; color:var(--paper);
     font-family:'JetBrains Mono'; font-size:.75rem; padding:4px 8px; cursor:pointer;
@@ -120,12 +126,30 @@
 <div class="layout">
   <aside>
     <div class="brand"><span class="dot"></span>adults<span style="color:var(--muted)">.uz</span></div>
-    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</div>
-    <div class="nav-item" data-page="ombor" onclick="showPage('ombor')">📦 Ombor</div>
-    <div class="nav-item" data-page="buyurtmalar" onclick="showPage('buyurtmalar')">🧾 Buyurtmalar</div>
-    <div class="nav-item" data-page="mijozlar" onclick="showPage('mijozlar')">👥 Mijozlar</div>
-    <div class="nav-item" data-page="katalog" onclick="showPage('katalog')">🗂️ Katalog</div>
-    <div class="nav-item" data-page="sozlamalar" onclick="showPage('sozlamalar')">⚙️ Sozlamalar</div>
+    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="9" width="4" height="12" rx="1"/><rect x="17" y="5" width="4" height="16" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-page="ombor" onclick="showPage('ombor')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M3 11h18"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Ombor
+    </div>
+    <div class="nav-item" data-page="buyurtmalar" onclick="showPage('buyurtmalar')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h3"/></svg>
+      Buyurtmalar
+    </div>
+    <div class="nav-item" data-page="mijozlar" onclick="showPage('mijozlar')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14.5c2.8.3 5 2.6 5 5.5"/></svg>
+      Mijozlar
+    </div>
+    <div class="nav-item" data-page="katalog" onclick="showPage('katalog')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7l9 9-7 7-9-9V4Z"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+      Katalog
+    </div>
+    <div class="nav-item" data-page="sozlamalar" onclick="showPage('sozlamalar')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="var(--surface)"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="var(--surface)"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2" fill="var(--surface)"/></svg>
+      Sozlamalar
+    </div>
   </aside>
 
   <main>
@@ -203,7 +227,7 @@
       <!-- Add product with AI description -->
       <div class="panel" style="margin-top:16px;">
         <div class="panel-title">
-          🤖 Yangi mahsulot qo'shish
+          Yangi mahsulot qo'shish
           <span class="tag">AI tavsif generatori bilan</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
@@ -212,29 +236,29 @@
           <input id="npPrice" type="number" placeholder="Narx (so'm)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           <input id="npStock" type="number" placeholder="Qoldiq (dona)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           <div>
-            <input id="npSize" placeholder="O'lcham (bittadan). Bir nechtasi kerak bo'lsa: L, M, XL" oninput="updateVariantPreview()" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
+            <input id="npSize" placeholder="O'lcham (bittadan: L). Bir nechtasi: L M XL yoki L, M, XL" oninput="updateVariantPreview()" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           </div>
           <div>
             <input id="npColor" placeholder="Rang (bittadan). Bir nechtasi kerak bo'lsa: Qora, Ko'k" oninput="updateVariantPreview()" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           </div>
         </div>
-        <div id="variantPreviewBox" style="background:rgba(34,195,171,.08); border:1px solid var(--teal); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:.82rem; color:var(--teal);">
+        <div id="variantPreviewBox" style="background:rgba(15,118,110,.06); border:1px solid var(--teal); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:.82rem; color:var(--teal);">
           ℹ️ 1 ta mahsulot yaratiladi (o'lcham/rang bo'sh yoki bitta bo'lsa)
         </div>
         <div style="margin-bottom:12px;">
           <label style="display:block; font-size:.78rem; color:var(--muted); margin-bottom:6px;">Mahsulot rasmi</label>
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
-            <div id="npImagePreview" style="width:64px; height:64px; border-radius:10px; background:var(--surface-2); border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:1.4rem; overflow:hidden; flex:none;">🖼️</div>
-            <input type="file" id="npImageFile" accept="image/*" style="color:var(--muted); font-size:.82rem;" onchange="previewNewProductImage(event)">
+            <div id="npImagePreview" style="width:64px; height:64px; border-radius:10px; background:var(--surface-2); border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:1.4rem; overflow:hidden; flex:none; color:var(--muted);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-5 4 4 3-3 4 4"/></svg></div>
+            <input type="file" id="npImageFile" accept="image/*" multiple style="color:var(--muted); font-size:.82rem;" onchange="previewNewProductImage(event)">
           </div>
           <input id="npImageUrl" placeholder="yoki rasm havolasini (URL) kiriting — masalan https://..." style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
           <div style="font-size:.72rem; color:var(--muted); margin-top:4px;">💡 Fayl yuklash Render bepul tarifida qayta ishga tushganda o'chib ketishi mumkin — doimiy rasm uchun URL kiritish tavsiya etiladi</div>
         </div>
         <div style="display:flex; gap:8px; margin-bottom:10px;">
           <textarea id="npDescription" placeholder="Tavsif — yoki AI'ga yozdiring →" rows="2" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
-          <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(34,195,171,.15); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">✨ AI yozsin</button>
+          <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(15,118,110,.10); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">AI yozsin</button>
         </div>
-        <button onclick="submitNewProduct()" style="width:100%; background:var(--teal); border:none; border-radius:10px; padding:12px; color:#092420; font-weight:700; cursor:pointer;">Mahsulotni qo'shish</button>
+        <button onclick="submitNewProduct()" style="width:100%; background:var(--teal); border:none; border-radius:10px; padding:12px; color:#FFFFFF; font-weight:700; cursor:pointer;">Mahsulotni qo'shish</button>
         <div id="npStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
       </div>
     </div>
@@ -300,8 +324,8 @@
         <div class="panel-title">Kategoriyalar</div>
         <div id="categoryManageList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
         <div style="display:flex; gap:8px;">
-          <input id="newCategoryName" placeholder="Yangi kategoriya nomi" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--paper); font-family:'Inter';">
-          <button onclick="addCategoryManaged()" style="background:var(--teal); border:none; border-radius:10px; padding:0 18px; color:#092420; font-weight:700; cursor:pointer;">+ Qo'shish</button>
+          <input id="newCategoryName" placeholder="Yangi kategoriya nomi" onkeydown="if(event.key==='Enter') addCategoryManaged()" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--paper); font-family:'Inter';">
+          <button onclick="addCategoryManaged()" style="background:var(--teal); border:none; border-radius:10px; padding:0 18px; color:#FFFFFF; font-weight:700; cursor:pointer;">+ Qo'shish</button>
         </div>
       </div>
 
@@ -321,9 +345,9 @@
     <!-- /page-katalog -->
 
     <!-- Mahsulotni tahrirlash modali -->
-    <div id="editModalBackdrop" style="display:none; position:fixed; inset:0; background:rgba(10,11,16,.7); z-index:100; align-items:center; justify-content:center;">
+    <div id="editModalBackdrop" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:100; align-items:center; justify-content:center;">
       <div style="background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; width:420px; max-width:90vw; max-height:85vh; overflow-y:auto;">
-        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.1rem; margin-bottom:16px;">Mahsulotni tahrirlash</div>
+        <div style="font-family:'Inter'; font-weight:700; font-size:1.1rem; margin-bottom:16px;">Mahsulotni tahrirlash</div>
         <input type="hidden" id="editId">
         <div style="display:flex; flex-direction:column; gap:10px;">
           <input id="editName" placeholder="Nomi" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
@@ -341,13 +365,13 @@
             <div id="galleryList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;"></div>
             <div style="display:flex; gap:8px;">
               <input id="newGalleryUrl" placeholder="Yangi rasm URL" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
-              <button onclick="addGalleryImage()" style="background:var(--teal); border:none; border-radius:10px; padding:0 14px; color:#092420; font-weight:700; cursor:pointer; font-size:.85rem;">+ Qo'shish</button>
+              <button onclick="addGalleryImage()" style="background:var(--teal); border:none; border-radius:10px; padding:0 14px; color:#FFFFFF; font-weight:700; cursor:pointer; font-size:.85rem;">+ Qo'shish</button>
             </div>
           </div>
         </div>
         <div style="display:flex; gap:8px; margin-top:16px;">
           <button onclick="closeEditModal()" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px; color:var(--paper); cursor:pointer;">Bekor qilish</button>
-          <button onclick="saveProductEdit()" style="flex:1; background:var(--teal); border:none; border-radius:10px; padding:11px; color:#092420; font-weight:700; cursor:pointer;">Saqlash</button>
+          <button onclick="saveProductEdit()" style="flex:1; background:var(--teal); border:none; border-radius:10px; padding:11px; color:#FFFFFF; font-weight:700; cursor:pointer;">Saqlash</button>
         </div>
         <div id="editStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
       </div>
@@ -385,7 +409,7 @@ function money(n){ return Math.round(n).toLocaleString('uz-UZ') + " so'm"; }
 /* ---------- Sahifa almashtirish ---------- */
 const PAGE_LOADERS = {
   dashboard: () => { loadSummary(); loadTopProducts(); loadTopCustomers(); },
-  ombor: () => { loadInventory(); },
+  ombor: () => { loadInventory(); loadCategoryOptions(); },
   buyurtmalar: () => { loadOrders(); },
   mijozlar: () => { loadCustomers(); },
   katalog: () => { loadCatalogPage(); loadCategoryManagement(); },
@@ -552,15 +576,23 @@ async function loadCustomers(){
       document.getElementById('customersSummary').textContent = "";
       return;
     }
-    body.innerHTML = customers.map(c => `
+    body.innerHTML = customers.map(c => {
+      const avatar = c.photo_url
+        ? `<img src="${c.photo_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`
+        : `<div style="width:32px;height:32px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--muted);">${(c.full_name||'?')[0].toUpperCase()}</div>`;
+      const tgLink = c.username
+        ? `<a href="https://t.me/${c.username}" target="_blank" style="color:var(--teal); text-decoration:none;">@${c.username}</a>`
+        : (c.telegram_id ? `<span class="mono" style="color:var(--muted);">TG: ${c.telegram_id}</span>` : (c.instagram_id ? `<span class="mono" style="color:var(--muted);">IG: ${c.instagram_id}</span>` : '—'));
+      return `
       <tr>
-        <td>${c.full_name}</td>
-        <td class="mono" style="color:var(--muted);">${c.telegram_id ? 'TG: '+c.telegram_id : (c.instagram_id ? 'IG: '+c.instagram_id : '—')}</td>
+        <td><div style="display:flex; align-items:center; gap:10px;">${avatar}<span>${c.full_name}</span></div></td>
+        <td>${tgLink}</td>
         <td class="mono">${c.order_count}</td>
         <td class="mono" style="color:var(--teal);">${money(c.total_spent)}</td>
         <td class="mono" style="color:var(--muted);">${c.last_order_at ? new Date(c.last_order_at).toLocaleDateString('uz-UZ') : '—'}</td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
     document.getElementById('customersSummary').textContent = `${customers.length} ta mijoz`;
   } catch(e){
     console.error(e);
@@ -588,8 +620,8 @@ async function loadCatalogPage(){
         <td class="mono" style="color:var(--muted);">${[p.size, p.color].filter(Boolean).join(' / ') || '—'}</td>
         <td class="mono">${p.stock}</td>
         <td style="display:flex; gap:6px;">
-          <button onclick="openEditModal(${p.id})" style="background:rgba(34,195,171,.12); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">Tahrirlash</button>
-          <button onclick="deactivateProduct(${p.id})" style="background:rgba(226,87,76,.12); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">O'chirish</button>
+          <button onclick="openEditModal(${p.id})" style="background:rgba(15,118,110,.10); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">Tahrirlash</button>
+          <button onclick="deactivateProduct(${p.id})" style="background:rgba(220,38,38,.10); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">O'chirish</button>
         </td>
       </tr>
     `).join('');
@@ -723,8 +755,8 @@ async function loadCategoryManagement(){
     wrap.innerHTML = cats.map(c => `
       <div style="display:flex; gap:8px; align-items:center;">
         <input value="${c.name}" id="catname-${c.id}" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
-        <button onclick="renameCategoryManaged(${c.id})" style="background:rgba(34,195,171,.12); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">Saqlash</button>
-        <button onclick="deleteCategoryManaged(${c.id})" style="background:rgba(226,87,76,.12); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">O'chirish</button>
+        <button onclick="renameCategoryManaged(${c.id})" style="background:rgba(15,118,110,.10); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">Saqlash</button>
+        <button onclick="deleteCategoryManaged(${c.id})" style="background:rgba(220,38,38,.10); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">O'chirish</button>
       </div>
     `).join('');
   } catch(e){
@@ -738,13 +770,17 @@ async function addCategoryManaged(){
   const name = input.value.trim();
   if(!name) return;
   try{
-    await fetch(`/api/categories?name=${encodeURIComponent(name)}`, { method: 'POST' });
+    const res = await fetch(`/api/categories?name=${encodeURIComponent(name)}`, { method: 'POST' });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({detail:"Kategoriya qo'shilmadi"}));
+      throw new Error(err.detail);
+    }
     input.value = '';
     loadCategoryManagement();
     loadCategoryOptions();
   } catch(e){
     console.error(e);
-    alert("Kategoriya qo'shilmadi");
+    alert("⚠️ " + e.message);
   }
 }
 
@@ -825,15 +861,15 @@ async function generateAIDescription(){
     console.error(e);
     showStatus("⚠️ AI xizmati ishlamadi — backend'da ANTHROPIC_API_KEY sozlanganini tekshiring", true);
   }
-  btn.disabled = false; btn.textContent = "✨ AI yozsin";
+  btn.disabled = false; btn.textContent = "AI yozsin";
 }
 
-let selectedImageFile = null;
+let selectedImageFiles = [];
 
 function updateVariantPreview(){
   const sizesRaw = document.getElementById('npSize').value.trim();
   const colorsRaw = document.getElementById('npColor').value.trim();
-  const sizeCount = sizesRaw ? sizesRaw.split(',').map(s=>s.trim()).filter(Boolean).length : 1;
+  const sizeCount = sizesRaw ? sizesRaw.split(/[,\s]+/).map(s=>s.trim()).filter(Boolean).length : 1;
   const colorCount = colorsRaw ? colorsRaw.split(',').map(c=>c.trim()).filter(Boolean).length : 1;
   const total = sizeCount * colorCount;
   const box = document.getElementById('variantPreviewBox');
@@ -849,27 +885,33 @@ function updateVariantPreview(){
 }
 
 function previewNewProductImage(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  selectedImageFile = file;
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById('npImagePreview').innerHTML = `<img src="${reader.result}" style="width:100%; height:100%; object-fit:cover;">`;
-  };
-  reader.readAsDataURL(file);
+  const files = Array.from(event.target.files || []);
+  if(files.length === 0) return;
+  selectedImageFiles = files;
+  const wrap = document.getElementById('npImagePreview');
+  wrap.style.display = 'flex';
+  wrap.style.gap = '6px';
+  wrap.innerHTML = files.map(f => {
+    const url = URL.createObjectURL(f);
+    return `<img src="${url}" style="width:64px; height:64px; object-fit:cover; border-radius:8px; flex:none;">`;
+  }).join('');
 }
 
 async function uploadImageIfSelected(){
-  if(!selectedImageFile) return null;
-  const formData = new FormData();
-  formData.append('file', selectedImageFile);
-  const res = await fetch('/api/upload-image', { method: 'POST', body: formData });
-  if(!res.ok){
-    const err = await res.json().catch(()=>({detail:"Rasm yuklanmadi"}));
-    throw new Error(err.detail);
+  if(selectedImageFiles.length === 0) return { main: null, extra: [] };
+  const urls = [];
+  for(const file of selectedImageFiles){
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload-image', { method: 'POST', body: formData });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({detail:"Rasm yuklanmadi"}));
+      throw new Error(err.detail);
+    }
+    const data = await res.json();
+    urls.push(data.image_url);
   }
-  const data = await res.json();
-  return data.image_url;
+  return { main: urls[0], extra: urls.slice(1) };
 }
 
 async function submitNewProduct(){
@@ -880,7 +922,11 @@ async function submitNewProduct(){
   // Vergul bilan ajratilgan o'lcham/rang qiymatlarini alohida ro'yxatga ajratamiz
   const sizesRaw = document.getElementById('npSize').value.trim();
   const colorsRaw = document.getElementById('npColor').value.trim();
-  const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : [null];
+  // O'lcham uchun ham vergul, ham probel bilan ajratishni qabul qilamiz
+  // (masalan "M L XL" yoki "M, L, XL" ikkisi ham ishlaydi). Rang uchun faqat
+  // vergul ishlatamiz, chunki rang nomlari ko'p so'zli bo'lishi mumkin
+  // (masalan "och ko'k", "to'q qizil").
+  const sizes = sizesRaw ? sizesRaw.split(/[,\s]+/).map(s => s.trim()).filter(Boolean) : [null];
   const colors = colorsRaw ? colorsRaw.split(',').map(c => c.trim()).filter(Boolean) : [null];
 
   const stock = parseInt(document.getElementById('npStock').value) || 0;
@@ -896,14 +942,21 @@ async function submitNewProduct(){
 
   try{
     showStatus("Yuklanmoqda...");
-    // Rasm: avval fayl tanlangan bo'lsa yuklaymiz, aks holda qo'lda kiritilgan URL ishlatiladi
-    const imageUrl = manualImageUrl || await uploadImageIfSelected();
+    // Rasm(lar): avval fayl(lar) tanlangan bo'lsa yuklaymiz, aks holda qo'lda
+    // kiritilgan URL ishlatiladi. Birinchi rasm — asosiy, qolganlari — galereya.
+    let imageUrl = manualImageUrl || null;
+    let extraImageUrls = [];
+    if(!manualImageUrl && selectedImageFiles.length > 0){
+      const uploaded = await uploadImageIfSelected();
+      imageUrl = uploaded.main;
+      extraImageUrls = uploaded.extra;
+    }
 
     // Har bir o'lcham x rang kombinatsiyasi uchun alohida mahsulot yaratamiz
     let createdCount = 0;
     for(const size of sizes){
       for(const color of colors){
-        await fetch('/api/products', {
+        const res = await fetch('/api/products', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({
@@ -912,15 +965,26 @@ async function submitNewProduct(){
             image_url: imageUrl,
           }),
         });
+        const created = await res.json();
         createdCount++;
+
+        // Qolgan rasmlarni shu mahsulotning galereyasiga qo'shamiz
+        for(const extraUrl of extraImageUrls){
+          await fetch(`/api/products/${created.id}/images`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url: extraUrl}),
+          });
+        }
       }
     }
 
     showStatus(`✅ ${createdCount} ta mahsulot qo'shildi!`);
     ['npName','npPrice','npStock','npSize','npColor','npDescription','npImageUrl'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('npImageFile').value = '';
-    document.getElementById('npImagePreview').innerHTML = '🖼️';
-    selectedImageFile = null;
+    document.getElementById('npImagePreview').style.display = '';
+    document.getElementById('npImagePreview').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--muted)"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-5 4 4 3-3 4 4"/></svg>';
+    selectedImageFiles = [];
     updateVariantPreview();
     loadInventory();
   } catch(e){

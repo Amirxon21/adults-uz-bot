@@ -146,6 +146,8 @@ class User(Base):
     telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, unique=True, nullable=True)
     instagram_id: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
     full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
@@ -372,17 +374,42 @@ async def get_or_create_user(
     telegram_id: int,
     full_name: Optional[str] = None,
     phone: Optional[str] = None,
+    username: Optional[str] = None,
+    photo_url: Optional[str] = None,
 ) -> User:
-    """Telegram ID bo'yicha foydalanuvchini topadi yoki yangi yaratadi."""
+    """
+    Telegram ID bo'yicha foydalanuvchini topadi yoki yangi yaratadi.
+    Agar foydalanuvchi allaqachon mavjud bo'lsa-yu, Telegram profili
+    (ism, username, rasm) o'zgargan bo'lsa, shu yerda yangilanadi.
+    """
     async with async_session() as session:
         result = await session.execute(
             select(User).where(User.telegram_id == telegram_id)
         )
         user = result.scalar_one_or_none()
         if user is not None:
+            changed = False
+            if full_name and user.full_name != full_name:
+                user.full_name = full_name
+                changed = True
+            if username and user.username != username:
+                user.username = username
+                changed = True
+            if photo_url and user.photo_url != photo_url:
+                user.photo_url = photo_url
+                changed = True
+            if changed:
+                await session.commit()
+                await session.refresh(user)
             return user
 
-        user = User(telegram_id=telegram_id, full_name=full_name, phone=phone)
+        user = User(
+            telegram_id=telegram_id,
+            full_name=full_name,
+            phone=phone,
+            username=username,
+            photo_url=photo_url,
+        )
         session.add(user)
         await session.commit()
         await session.refresh(user)
@@ -515,7 +542,13 @@ async def search_products_by_keywords(keywords: list[str], limit: int = 8) -> Se
 async def add_category(name: str) -> Category:
     """Yangi kategoriya qo'shadi (masalan: Futbolka, Shim, Kurtka)."""
     async with async_session() as session:
-        category = Category(name=name)
+        existing = await session.execute(
+            select(Category).where(func.lower(Category.name) == name.strip().lower())
+        )
+        if existing.scalar_one_or_none() is not None:
+            raise ValueError(f"'{name}' nomli kategoriya allaqachon mavjud")
+
+        category = Category(name=name.strip())
         session.add(category)
         await session.commit()
         await session.refresh(category)
@@ -745,6 +778,8 @@ async def get_all_customers(limit: int = 200) -> list[dict]:
                 User.telegram_id,
                 User.instagram_id,
                 User.full_name,
+                User.username,
+                User.photo_url,
                 User.phone,
                 User.created_at,
                 func.count(Order.id).filter(Order.status != OrderStatus.CANCELLED).label("order_count"),
@@ -752,7 +787,7 @@ async def get_all_customers(limit: int = 200) -> list[dict]:
                 func.max(Order.created_at).label("last_order_at"),
             )
             .outerjoin(Order, Order.user_id == User.id)
-            .group_by(User.id, User.telegram_id, User.instagram_id, User.full_name, User.phone, User.created_at)
+            .group_by(User.id, User.telegram_id, User.instagram_id, User.full_name, User.username, User.photo_url, User.phone, User.created_at)
             .order_by(func.count(Order.id).desc(), User.created_at.desc())
             .limit(limit)
         )
@@ -761,6 +796,8 @@ async def get_all_customers(limit: int = 200) -> list[dict]:
             {
                 "id": row.id,
                 "full_name": row.full_name or f"ID {row.telegram_id or row.instagram_id}",
+                "username": row.username,
+                "photo_url": row.photo_url,
                 "telegram_id": row.telegram_id,
                 "instagram_id": row.instagram_id,
                 "phone": row.phone,

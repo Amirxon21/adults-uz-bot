@@ -210,6 +210,8 @@ class UserIn(BaseModel):
     telegram_id: int
     full_name: Optional[str] = None
     phone: Optional[str] = None
+    username: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class OrderItemIn(BaseModel):
@@ -404,7 +406,10 @@ async def api_list_categories():
 
 @app.post("/api/categories", response_model=CategoryOut)
 async def api_add_category(name: str, _: bool = Depends(verify_admin)):
-    return await db.add_category(name)
+    try:
+        return await db.add_category(name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.patch("/api/categories/{category_id}", response_model=CategoryOut)
@@ -434,6 +439,8 @@ async def api_get_or_create_user(payload: UserIn):
         telegram_id=payload.telegram_id,
         full_name=payload.full_name,
         phone=payload.phone,
+        username=payload.username,
+        photo_url=payload.photo_url,
     )
     return {"id": user.id, "telegram_id": user.telegram_id, "full_name": user.full_name}
 
