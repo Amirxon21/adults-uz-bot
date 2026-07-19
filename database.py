@@ -14,6 +14,7 @@ O'rnatish:
 from __future__ import annotations
 
 import enum
+import logging
 import os
 from datetime import datetime, timedelta
 from typing import Optional, Sequence
@@ -30,8 +31,10 @@ from sqlalchemy import (
     Text,
     func,
     select,
+    text,
     update as sa_update,
 )
+logger = logging.getLogger("adults_uz")
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -178,6 +181,30 @@ async def init_db() -> None:
     """Jadvallarni (agar mavjud bo'lmasa) yaratadi. Botni ishga tushirishda bir marta chaqiring."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await _run_lightweight_migrations(conn)
+
+
+async def _run_lightweight_migrations(conn) -> None:
+    """
+    SQLAlchemy'ning create_all() funksiyasi FAQAT yangi jadval yaratadi —
+    mavjud jadvalga yangi ustun qo'shmaydi (bu "migratsiya" deb ataladi).
+    Loyiha rivojlanishi davomida modelga yangi maydonlar qo'shilganda
+    (masalan username, photo_url), ularni mavjud bazaga shu yerda,
+    xavfsiz tarzda qo'shamiz. Faqat PostgreSQL uchun ishlaydi (Neon/Render);
+    SQLite bilan ishlaganda (lokal test) sokin o'tkazib yuboriladi.
+    """
+    if engine.dialect.name != "postgresql":
+        return
+
+    migrations = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url VARCHAR(500)",
+    ]
+    for statement in migrations:
+        try:
+            await conn.execute(text(statement))
+        except Exception as e:
+            logger.warning(f"Migratsiya bajarilmadi ({statement}): {e}")
 
 
 # ---------------------------------------------------------------------------
