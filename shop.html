@@ -403,7 +403,7 @@ let cart = [];          // {productId, size, color, qty}
 let orders = [];
 let activeCategory = "Hammasi";
 let currentProduct = null;
-let selectedSize = null, selectedColor = null, qty = 1;
+let qty = 1;
 
 /* ---------- Telegram Web App init ---------- */
 const tg = window.Telegram?.WebApp;
@@ -480,26 +480,74 @@ function selectCategory(c){ activeCategory = c; renderChips(); loadProducts(); }
 /* ---------- Catalog ---------- */
 function money(n){ return Math.round(n).toLocaleString('uz-UZ') + " so'm"; }
 
+/* ---------- Variant guruhlash ----------
+   Bir xil nomdagi mahsulotlar (masalan "Klassik futbolka" L/Qora,
+   "Klassik futbolka" M/Oq) katalogda BITTA kartochka sifatida ko'rsatiladi,
+   ichida esa o'lcham/rang tanlash tugmalari chiqadi — real do'kon savdo
+   ilovalaridagi kabi. */
+function groupProducts(products){
+  const groups = new Map();
+  for(const p of products){
+    const key = p.name.trim().toLowerCase();
+    if(!groups.has(key)){
+      groups.set(key, {
+        key, name: p.name, image_url: p.image_url, emoji: p.emoji,
+        description: p.description, category_id: p.category_id,
+        variants: [],
+      });
+    }
+    const g = groups.get(key);
+    if(!g.image_url && p.image_url) g.image_url = p.image_url;
+    g.variants.push(p);
+  }
+  return Array.from(groups.values());
+}
+
+function groupPriceLabel(group){
+  const prices = group.variants.map(v=>v.price);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  return min === max ? money(min) : `${money(min)}dan`;
+}
+
+function groupTotalStock(group){
+  return group.variants.reduce((s,v)=>s+v.stock, 0);
+}
+
 function renderCatalog(){
   const q = document.getElementById('searchInput').value.toLowerCase();
   let list = PRODUCTS.filter(p => p.name.toLowerCase().includes(q));
-  document.getElementById('catalogCount').textContent = list.length + " ta mahsulot";
+  const groups = groupProducts(list);
+  document.getElementById('catalogCount').textContent = groups.length + " ta mahsulot";
   const grid = document.getElementById('productGrid');
-  grid.innerHTML = list.map(p => `
-    <div class="card" onclick="openProduct(${p.id})">
-      <div class="card-img" style="background:${p.image_url ? `url('${p.image_url}') center/cover` : 'linear-gradient(150deg, var(--surface-2), var(--surface))'};">
-        ${p.stock === 0 ? '<div class="card-tag" style="color:var(--danger); border-color:var(--danger);">TUGADI</div>' : (p.stock<=3 ? `<div class="card-tag">${p.stock} DONA QOLDI</div>` : '')}
-        ${p.image_url ? '' : `<span>${p.emoji}</span>`}
+  grid.innerHTML = groups.map(g => {
+    const totalStock = groupTotalStock(g);
+    return `
+    <div class="card" onclick="openProductGroup('${g.key.replace(/'/g,"\\'")}')">
+      <div class="card-img" style="background:${g.image_url ? `url('${g.image_url}') center/cover` : 'linear-gradient(150deg, var(--surface-2), var(--surface))'};">
+        ${totalStock === 0 ? '<div class="card-tag" style="color:var(--danger); border-color:var(--danger);">TUGADI</div>' : (totalStock<=3 ? `<div class="card-tag">${totalStock} DONA QOLDI</div>` : '')}
+        ${g.image_url ? '' : `<span>${g.emoji}</span>`}
       </div>
       <div class="card-body">
-        <div class="card-name">${p.name}</div>
+        <div class="card-name">${g.name}</div>
         <div class="card-meta">
-          <div class="card-price">${money(p.price)}</div>
-          <div class="card-add" onclick="event.stopPropagation(); quickAdd(${p.id})">+</div>
+          <div class="card-price">${groupPriceLabel(g)}</div>
+          <div class="card-add" onclick="event.stopPropagation(); quickAddGroup('${g.key.replace(/'/g,"\\'")}')">+</div>
         </div>
       </div>
     </div>
-  `).join('') || `<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🔎</div>Hech narsa topilmadi</div>`;
+  `;
+  }).join('') || `<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🔎</div>Hech narsa topilmadi</div>`;
+}
+
+function quickAddGroup(key){
+  const groups = groupProducts(PRODUCTS);
+  const g = groups.find(x=>x.key===key);
+  if(!g) return;
+  if(g.variants.length === 1){
+    quickAdd(g.variants[0].id);
+  } else {
+    openProductGroup(key); // bir nechta variant bor — tanlash uchun oynani ochamiz
+  }
 }
 
 function quickAdd(id){
@@ -518,40 +566,100 @@ function setSheetMainImage(url, emoji){
     : `<span style="font-size:4rem; background:linear-gradient(150deg, var(--surface-2), var(--surface)); width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:16px;">${emoji}</span>`;
 }
 
-async function openProduct(id){
-  currentProduct = PRODUCTS.find(p=>p.id===id);
+let currentGroup = null;
+let selectedSize = null;
+let selectedColor = null;
+
+async function openProductGroup(key){
+  const groups = groupProducts(PRODUCTS);
+  currentGroup = groups.find(g => g.key === key);
+  if(!currentGroup) return;
+
   qty = 1;
-  setSheetMainImage(currentProduct.image_url, currentProduct.emoji);
-  document.getElementById('sheetTitle').textContent = currentProduct.name;
-  document.getElementById('sheetPrice').textContent = money(currentProduct.price);
-  document.getElementById('sheetDesc').textContent = currentProduct.description || "";
-  const tags = [];
-  if(currentProduct.size) tags.push(currentProduct.size);
-  if(currentProduct.color) tags.push(currentProduct.color);
-  document.getElementById('variantTags').innerHTML = tags.map(t => `<div class="pill selected" style="cursor:default;">${t}</div>`).join('') || '<span style="color:var(--muted); font-size:.85rem;">—</span>';
   document.getElementById('qtyVal').textContent = qty;
-  const btn = document.getElementById('addToCartBtn');
-  if(currentProduct.stock === 0){ btn.disabled = true; btn.textContent = "Omborda yo'q"; }
-  else { btn.disabled = false; btn.textContent = "Savatga qo'shish"; }
+  document.getElementById('sheetTitle').textContent = currentGroup.name;
+  document.getElementById('sheetDesc').textContent = currentGroup.description || "";
+
+  // Standart holatda: birinchi omborda bor variant tanlanadi (yoki umuman birinchisi)
+  const firstInStock = currentGroup.variants.find(v=>v.stock>0) || currentGroup.variants[0];
+  selectedSize = firstInStock.size;
+  selectedColor = firstInStock.color;
+
+  renderVariantPickers();
+  updateSheetForSelection();
 
   document.getElementById('sheetBackdrop').classList.add('show');
   document.getElementById('sheet').classList.add('show');
 
-  // Galereya — asosiy rasm + qo'shimcha rasmlar (agar bo'lsa) kichik strip sifatida
+  // Galereya
   const stripEl = document.getElementById('sheetGalleryStrip');
   stripEl.innerHTML = '';
   try{
-    const extraImages = await apiGet(`/api/products/${id}/images`);
+    const extraImages = await apiGet(`/api/products/${firstInStock.id}/images`);
     const allImages = [];
-    if(currentProduct.image_url) allImages.push(currentProduct.image_url);
+    if(currentGroup.image_url) allImages.push(currentGroup.image_url);
     extraImages.forEach(img => allImages.push(img.url));
     if(allImages.length > 1){
       stripEl.innerHTML = allImages.map(url => `
-        <img src="${url}" onclick="setSheetMainImage('${url}', '${currentProduct.emoji}')" style="width:56px; height:56px; object-fit:cover; border-radius:10px; border:1px solid var(--line); cursor:pointer; flex:none;">
+        <img src="${url}" onclick="setSheetMainImage('${url}', '${currentGroup.emoji}')" style="width:56px; height:56px; object-fit:cover; border-radius:10px; border:1px solid var(--line); cursor:pointer; flex:none;">
       `).join('');
     }
   } catch(e){ console.error(e); }
 }
+
+function renderVariantPickers(){
+  const sizes = [...new Set(currentGroup.variants.map(v=>v.size).filter(Boolean))];
+  const colors = [...new Set(currentGroup.variants.map(v=>v.color).filter(Boolean))];
+  const wrap = document.getElementById('variantTags');
+
+  let html = '';
+  if(sizes.length > 0){
+    html += `<div style="width:100%; margin-bottom:8px;">
+      <div style="font-size:.72rem; color:var(--muted); margin-bottom:6px;">O'LCHAM</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        ${sizes.map(s => {
+          const variantExists = currentGroup.variants.some(v=>v.size===s && v.color===selectedColor && v.stock>0)
+            || currentGroup.variants.some(v=>v.size===s && v.stock>0);
+          return `<div class="pill ${s===selectedSize?'selected':''}" style="${variantExists?'':'opacity:.35;'}" onclick="pickSize('${s.replace(/'/g,"\\'")}')">${s}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  if(colors.length > 0){
+    html += `<div style="width:100%;">
+      <div style="font-size:.72rem; color:var(--muted); margin-bottom:6px;">RANG</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        ${colors.map(c => `<div class="pill ${c===selectedColor?'selected':''}" onclick="pickColor('${c.replace(/'/g,"\\'")}')">${c}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+  wrap.innerHTML = html || '<span style="color:var(--muted); font-size:.85rem;">—</span>';
+}
+
+function pickSize(size){ selectedSize = size; renderVariantPickers(); updateSheetForSelection(); }
+function pickColor(color){ selectedColor = color; renderVariantPickers(); updateSheetForSelection(); }
+
+function getSelectedVariant(){
+  // Aynan tanlangan o'lcham+rangga mos variantni topamiz. Agar aniq mos kelmasa
+  // (masalan rang shu o'lchamda mavjud emas), eng yaqinini olamiz.
+  let variant = currentGroup.variants.find(v => v.size===selectedSize && v.color===selectedColor);
+  if(!variant) variant = currentGroup.variants.find(v => v.size===selectedSize);
+  if(!variant) variant = currentGroup.variants.find(v => v.color===selectedColor);
+  if(!variant) variant = currentGroup.variants[0];
+  return variant;
+}
+
+function updateSheetForSelection(){
+  const variant = getSelectedVariant();
+  currentProduct = variant; // savat/checkout eski kod bilan mos ishlashi uchun
+  setSheetMainImage(variant.image_url || currentGroup.image_url, currentGroup.emoji);
+  document.getElementById('sheetPrice').textContent = money(variant.price);
+
+  const btn = document.getElementById('addToCartBtn');
+  if(variant.stock === 0){ btn.disabled = true; btn.textContent = "Omborda yo'q"; }
+  else { btn.disabled = false; btn.textContent = `Savatga qo'shish — ${variant.stock} dona bor`; }
+}
+
 function closeSheet(){
   document.getElementById('sheetBackdrop').classList.remove('show');
   document.getElementById('sheet').classList.remove('show');
@@ -559,7 +667,9 @@ function closeSheet(){
 function changeQty(d){ qty = Math.max(1, qty+d); document.getElementById('qtyVal').textContent = qty; }
 
 function addToCart(){
-  cart.push({productId:currentProduct.id, qty});
+  const variant = getSelectedVariant();
+  if(variant.stock === 0) return showToast("❌ Bu variant omborda yo'q");
+  cart.push({productId:variant.id, qty});
   updateCartCount();
   closeSheet();
   showToast("✅ Savatga qo'shildi");
@@ -715,7 +825,7 @@ function addProductSuggestions(products){
   const row = document.createElement('div');
   row.style.cssText = 'display:flex; gap:8px; overflow-x:auto; align-self:flex-start; max-width:100%;';
   row.innerHTML = products.map(p => `
-    <div onclick="closeSheet(); showView('catalog'); setTimeout(()=>openProduct(${p.id}),50)" style="flex:none; width:120px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:8px; cursor:pointer;">
+    <div onclick="closeSheet(); showView('catalog'); setTimeout(()=>openProductGroup('${p.name.trim().toLowerCase().replace(/'/g,"\\'")}'),50)" style="flex:none; width:120px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:8px; cursor:pointer;">
       <div style="height:60px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; background:var(--surface-2); border-radius:8px; margin-bottom:6px;">${emojiFor({category_name: categoryMap[p.category_id]})}</div>
       <div style="font-size:.72rem; font-weight:600; line-height:1.2; margin-bottom:4px;">${p.name}</div>
       <div style="font-size:.72rem; color:var(--teal); font-family:'JetBrains Mono';">${money(p.price)}</div>
