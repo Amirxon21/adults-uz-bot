@@ -874,13 +874,13 @@ function updateVariantPreview(){
   const total = sizeCount * colorCount;
   const box = document.getElementById('variantPreviewBox');
   if(total <= 1){
-    box.innerHTML = "ℹ️ 1 ta mahsulot yaratiladi";
+    box.innerHTML = "ℹ️ Mijozlarga 1 ta mahsulot bo'lib ko'rinadi";
     box.style.color = 'var(--teal)';
     box.style.borderColor = 'var(--teal)';
   } else {
-    box.innerHTML = `⚠️ Diqqat: ${sizeCount} ta o'lcham × ${colorCount} ta rang = <b>${total} ta alohida mahsulot</b> yaratiladi (har biri bir xil nom/narx/rasm bilan, lekin alohida o'lcham-rang birikmasida)`;
-    box.style.color = 'var(--mustard)';
-    box.style.borderColor = 'var(--mustard)';
+    box.innerHTML = `✅ Mijozlarga bu <b>bitta mahsulot</b> bo'lib ko'rinadi — ichida ${sizeCount} ta o'lcham${colorCount>1 ? ` × ${colorCount} ta rang` : ''} tanlash tugmalari bilan (BIG JEANS botidagi kabi). Ombor hisobi uchun orqa fonda ${total} ta alohida qoldiq yozuvi saqlanadi.`;
+    box.style.color = 'var(--teal)';
+    box.style.borderColor = 'var(--teal)';
   }
 }
 
@@ -936,7 +936,7 @@ async function submitNewProduct(){
 
   const totalVariants = sizes.length * colors.length;
   if(totalVariants > 1){
-    const confirmed = confirm(`Diqqat: ${sizes.length} ta o'lcham × ${colors.length} ta rang = ${totalVariants} ta ALOHIDA mahsulot yaratiladi. Davom etasizmi?`);
+    const confirmed = confirm(`Bu mahsulot mijozlarga BITTA mahsulot bo'lib ko'rinadi (${sizes.length} ta o'lcham${colors.length>1 ? ` × ${colors.length} ta rang` : ''} tanlash tugmalari bilan). Davom etasizmi?`);
     if(!confirmed) return;
   }
 
