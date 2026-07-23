@@ -1,5 +1,5 @@
 """
-adults.uz — Telegram Web App uchun REST API (FastAPI)
+Romantica — Telegram Web App uchun REST API (FastAPI)
 
 Bu fayl database.py dagi funksiyalarni HTTP endpoint sifatida ochadi,
 shop.html va admin.html shu endpointlardan foydalanadi.
@@ -52,7 +52,7 @@ import ai
 import instagram
 import notify
 
-app = FastAPI(title="adults.uz API")
+app = FastAPI(title="Romantica API")
 
 BASE_DIR = Path(__file__).resolve().parent
 UPLOADS_DIR = BASE_DIR / "static" / "uploads"
@@ -113,25 +113,25 @@ async def seed_if_empty() -> None:
         return
 
     logger.info("Baza bo'sh — demo ma'lumotlar avtomatik qo'shilmoqda...")
-    categories = ["Futbolka", "Ko'ylak", "Shim", "Kurtka", "Aksessuar"]
+    categories = ["Atirgullar", "Pionlar", "Aralash gullar", "Quyosh gullari"]
     cat_ids = {}
     for name in categories:
         cat = await db.add_category(name)
         cat_ids[name] = cat.id
 
     products = [
-        dict(name="Klassik oq futbolka", price=99000, size="L", color="Oq", stock=24,
-             description="100% paxta, yozgi kolleksiya.", category_id=cat_ids["Futbolka"]),
-        dict(name="Sport futbolka", price=119000, size="L", color="Yashil", stock=30,
-             description="Nafas oluvchi mato, sport uchun.", category_id=cat_ids["Futbolka"]),
-        dict(name="Denim kurtka", price=349000, size="M", color="Ko'k", stock=6,
-             description="Og'ir zichlikdagi denim, klassik kroy.", category_id=cat_ids["Kurtka"]),
-        dict(name="Rasmiy ko'ylak", price=189000, size="S", color="Oq", stock=15,
-             description="Ish uchun ideal.", category_id=cat_ids["Ko'ylak"]),
-        dict(name="Slim fit shim", price=229000, size="32", color="Qora", stock=2,
-             description="Cho'ziluvchan mato.", category_id=cat_ids["Shim"]),
-        dict(name="Teri kamar", price=79000, size="One Size", color="Jigarrang", stock=12,
-             description="Tabiiy teridan.", category_id=cat_ids["Aksessuar"]),
+        dict(name="Qizil atirgul buketi", price=249000, size="11 dona", color="Qizil", stock=18,
+             description="Yangi kesilgan qizil atirgullar, elegant qadoqlash bilan.", category_id=cat_ids["Atirgullar"]),
+        dict(name="Pushti atirgul buketi", price=239000, size="9 dona", color="Pushti", stock=14,
+             description="Nafis pushti atirgullar, romantik uchrashuvlar uchun.", category_id=cat_ids["Atirgullar"]),
+        dict(name="Pion buketi", price=299000, size="7 dona", color="Oq-pushti", stock=10,
+             description="Mavsumiy pionlar, boy va yumshoq ifor bilan.", category_id=cat_ids["Pionlar"]),
+        dict(name="Aralash gullar buketi", price=219000, size="Standart", color="Rang-barang", stock=16,
+             description="Turli mavsumiy gullardan tashkil topgan quvnoq buket.", category_id=cat_ids["Aralash gullar"]),
+        dict(name="Quyoshgul buketi", price=189000, size="5 dona", color="Sariq", stock=12,
+             description="Yorqin quyoshgullar, kayfiyatni ko'taradigan sovg'a.", category_id=cat_ids["Quyosh gullari"]),
+        dict(name="Premium gul savati", price=459000, size="Katta", color="Rang-barang", stock=6,
+             description="Hashamatli savatda aralash gullar — maxsus kunlar uchun.", category_id=cat_ids["Aralash gullar"]),
     ]
     for p in products:
         await db.add_product(**p)
@@ -703,4 +703,4 @@ async def health_check():
 
 @app.get("/")
 async def root():
-    return {"message": "adults.uz API ishlayapti. /docs, /shop yoki /admin ga o'ting."}
+    return {"message": "Romantica API ishlayapti. /docs, /shop yoki /admin ga o'ting."}

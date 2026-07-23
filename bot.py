@@ -1,5 +1,5 @@
 """
-adults.uz — Telegram bot (/start buyrug'i va Web App tugmasi)
+Romantica — Telegram bot (/start buyrug'i va Web App tugmasi)
 
 Bu alohida, uzluksiz ishlaydigan jarayon (process) — uni FastAPI serveridan
 alohida, alohida terminalda ishga tushirasiz. Vazifasi: mijoz botga /start
@@ -51,7 +51,7 @@ async def handle_start(message: Message):
     ])
     await message.answer(
         "Assalomu alaykum! 👋\n\n"
-        "<b>adults.uz</b> rasmiy botiga xush kelibsiz.\n"
+        "<b>Romantica</b> rasmiy gul do'koni botiga xush kelibsiz.\n"
         "Quyidagi tugma orqali katalogni ko'rib, buyurtma berishingiz mumkin.",
         reply_markup=keyboard,
         parse_mode="HTML",
@@ -63,7 +63,7 @@ async def handle_help(message: Message):
     await message.answer(
         "ℹ️ <b>Yordam</b>\n\n"
         "/start — do'konni ochish\n"
-        "Savollar bo'lsa, operator bilan bog'laning: +998 88 042 41 88",
+        "Savollar bo'lsa, operator bilan bog'laning: +998 XX XXX XX XX",
         parse_mode="HTML",
     )
 

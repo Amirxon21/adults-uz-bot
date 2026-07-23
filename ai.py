@@ -1,5 +1,5 @@
 """
-adults.uz — AI funksiyalari (Google Gemini API orqali)
+Romantica — AI funksiyalari (Google Gemini API orqali)
 
 Bu modul uchta AI funksiyani ta'minlaydi:
   1. chat_recommend()         — mijoz bilan suhbat, katalogdan mahsulot tavsiya qilish
@@ -107,7 +107,7 @@ def chat_recommend(message: str, catalog: list[dict], history: Optional[list[dic
         for p in catalog
     )
 
-    system_prompt = f"""Sen "adults.uz" kiyim-kechak do'konining AI-yordamchisisan.
+    system_prompt = f"""Sen "Romantica" gul do'konining AI-yordamchisisan.
 Vazifang — mijozga do'stona, qisqa va foydali javob berish, imkon qadar
 quyidagi katalogdan mos mahsulot(lar)ni tavsiya qilish.
 
@@ -146,13 +146,13 @@ KATALOG:
 
 def analyze_clothing_image(image_base64: str, media_type: str = "image/jpeg") -> dict:
     """
-    Mijoz yuborgan kiyim rasmini tahlil qiladi va qidiruv uchun kalit
+    Mijoz yuborgan gul/buket rasmini tahlil qiladi va qidiruv uchun kalit
     so'zlarni chiqaradi (kategoriya, rang, uslub).
     """
     prompt_text = (
-        "Bu rasmda qanday kiyim bor? Faqat quyidagi JSON formatida "
+        "Bu rasmda qanday gul/buket bor? Faqat quyidagi JSON formatida "
         "javob ber, boshqa hech narsa yozma:\n"
-        '{"category": "Futbolka/Ko\'ylak/Shim/Kurtka/Aksessuar dan biri", '
+        '{"category": "Atirgullar/Pionlar/Aralash gullar/Quyosh gullari dan biri", '
         '"color": "asosiy rang (o\'zbekcha)", '
         '"keywords": ["qidiruv uchun 3-5 ta kalit so\'z, o\'zbekcha"], '
         '"description": "1 gapli tavsif"}'
@@ -212,7 +212,7 @@ def parse_order_intent(message: str, catalog: list[dict]) -> dict:
         for p in catalog
     )
 
-    system_prompt = f"""Sen "adults.uz" kiyim-kechak do'konining Instagram DM
+    system_prompt = f"""Sen "Romantica" gul do'konining Instagram DM
 yordamchisisan. Mijozning xabarini tahlil qil va aniq JSON formatida javob ber:
 
 {{"intent": "order" yoki "question" yoki "greeting",

@@ -3,22 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>adults.uz</title>
+<title>Romantica</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#14161f;
-    --surface:#1c1f2a;
-    --surface-2:#252938;
-    --line:#323649;
-    --paper:#f3f1ea;
-    --muted:#9a9fb3;
-    --teal:#22c3ab;
-    --teal-dim:#1a6f63;
-    --mustard:#e8a33d;
-    --danger:#e2574c;
+    --ink:#1A0E11;
+    --surface:#2C151A;
+    --surface-2:#3B1C23;
+    --line:#4E2932;
+    --paper:#F5EAD9;
+    --muted:#B99AA0;
+    --teal:#C9A227;
+    --teal-dim:#8A6E1B;
+    --mustard:#8C2F39;
+    --danger:#E4483F;
     --radius:18px;
     font-size:16px;
   }
@@ -273,7 +273,7 @@
 
   <header>
     <div class="brand-row">
-      <div class="brand"><span class="dot"></span>adults<span style="color:var(--muted)">.uz</span></div>
+      <div class="brand"><span class="dot"></span>Romantica</div>
       <div class="cart-btn" onclick="showView('cart')">
         🛍️
         <div class="cart-count" id="cartCount">0</div>
@@ -299,7 +299,7 @@
     <div class="section-title">🤖 AI Yordamchi</div>
     <div id="chatMessages" style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px; min-height:200px;"></div>
     <div style="display:flex; gap:8px; position:sticky; bottom:78px;">
-      <input id="chatInput" placeholder="Masalan: yozgi futbolka kerak..." style="flex:1; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; color:var(--paper); font-family:'Inter'; outline:none;" onkeydown="if(event.key==='Enter') sendChatMessage()">
+      <input id="chatInput" placeholder="Masalan: onam uchun buket kerak..." style="flex:1; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; color:var(--paper); font-family:'Inter'; outline:none;" onkeydown="if(event.key==='Enter') sendChatMessage()">
       <button onclick="sendChatMessage()" style="background:var(--teal); border:none; border-radius:12px; padding:0 18px; color:#092420; font-weight:700; cursor:pointer;">➤</button>
     </div>
   </div>
@@ -393,9 +393,9 @@ const API_BASE = ""; // bo'sh — chunki api.py shop.html'ni o'zi /shop orqali b
 
 // Har bir mahsulot rasmi o'rniga chiqadigan emoji (kategoriya nomi bo'yicha, faqat vizual uchun)
 const CATEGORY_EMOJI = {
-  "Futbolka":"👕", "Ko'ylak":"👔", "Shim":"👖", "Kurtka":"🧥", "Aksessuar":"👞"
+  "Atirgullar":"🌹", "Pionlar":"🌺", "Aralash gullar":"💐", "Quyosh gullari":"🌻"
 };
-function emojiFor(p){ return CATEGORY_EMOJI[p.category_name] || "🛍️"; }
+function emojiFor(p){ return CATEGORY_EMOJI[p.category_name] || "🌸"; }
 
 let CATEGORIES = ["Hammasi"];
 let PRODUCTS = [];
@@ -481,8 +481,8 @@ function selectCategory(c){ activeCategory = c; renderChips(); loadProducts(); }
 function money(n){ return Math.round(n).toLocaleString('uz-UZ') + " so'm"; }
 
 /* ---------- Variant guruhlash ----------
-   Bir xil nomdagi mahsulotlar (masalan "Klassik futbolka" L/Qora,
-   "Klassik futbolka" M/Oq) katalogda BITTA kartochka sifatida ko'rsatiladi,
+   Bir xil nomdagi mahsulotlar (masalan "Qizil atirgul buketi" 11 dona/Qizil,
+   "Qizil atirgul buketi" 21 dona/Pushti) katalogda BITTA kartochka sifatida ko'rsatiladi,
    ichida esa o'lcham/rang tanlash tugmalari chiqadi — real do'kon savdo
    ilovalaridagi kabi. */
 function groupProducts(products){

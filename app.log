@@ -1,0 +1,11 @@
+2026-07-15 09:20:01,693 [INFO] Server ishga tushdi, baza tayyor.
+2026-07-15 10:01:00,891 [INFO] Yangi buyurtma: #1 — user_id=2, product_id=2, qty=1
+2026-07-15 10:16:55,046 [INFO] Server ishga tushdi, baza tayyor.
+2026-07-16 00:35:57,530 [INFO] Server ishga tushdi, baza tayyor.
+2026-07-16 00:45:32,028 [INFO] Server ishga tushdi, baza tayyor.
+2026-07-16 01:14:16,068 [INFO] Server ishga tushdi, baza tayyor.
+2026-07-16 01:14:21,489 [ERROR] Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>adults.uz — Admin panel</title>
+<title>Romantica — Admin panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#F7F8FA; --surface:#FFFFFF; --surface-2:#F1F5F9; --line:#E5E7EB;
-    --paper:#0F172A; --muted:#64748B; --teal:#0F766E; --mustard:#B45309; --danger:#DC2626;
+    --paper:#0F172A; --muted:#64748B; --teal:#7A1F3D; --mustard:#A67C00; --danger:#DC2626;
     --shadow:0 1px 2px rgba(15,23,42,.04), 0 1px 1px rgba(15,23,42,.03);
   }
   *{box-sizing:border-box;}
@@ -32,7 +32,7 @@
   }
   .nav-item svg{flex:none; opacity:.85;}
   .nav-item:hover{background:var(--surface-2); color:var(--paper);}
-  .nav-item.active{background:rgba(15,118,110,.10); color:var(--teal); font-weight:600;}
+  .nav-item.active{background:rgba(122,31,61,.10); color:var(--teal); font-weight:600;}
   .nav-item.active svg{opacity:1;}
 
   main{flex:1; padding:32px 36px; max-width:1200px;}
@@ -100,8 +100,8 @@
   .stock-badge{
     padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono';
   }
-  .stock-ok{background:rgba(15,118,110,.10); color:var(--teal);}
-  .stock-low{background:rgba(180,83,9,.12); color:var(--mustard);}
+  .stock-ok{background:rgba(122,31,61,.10); color:var(--teal);}
+  .stock-low{background:rgba(166,124,0,.12); color:var(--mustard);}
   .stock-out{background:rgba(220,38,38,.10); color:var(--danger);}
   .trend{font-family:'JetBrains Mono'; font-size:.8rem;}
 
@@ -111,8 +111,8 @@
 
   /* ---- status badges (buyurtmalar) ---- */
   .status-badge{padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:700; font-family:'JetBrains Mono';}
-  .status-pending{background:rgba(180,83,9,.12); color:var(--mustard);}
-  .status-paid, .status-shipped{background:rgba(15,118,110,.10); color:var(--teal);}
+  .status-pending{background:rgba(166,124,0,.12); color:var(--mustard);}
+  .status-paid, .status-shipped{background:rgba(122,31,61,.10); color:var(--teal);}
   .status-delivered{background:rgba(21,128,61,.10); color:#15803D;}
   .status-cancelled{background:rgba(220,38,38,.10); color:var(--danger);}
   select.status-select{
@@ -125,7 +125,7 @@
 <body>
 <div class="layout">
   <aside>
-    <div class="brand"><span class="dot"></span>adults<span style="color:var(--muted)">.uz</span></div>
+    <div class="brand"><span class="dot"></span>Romantica</div>
     <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="9" width="4" height="12" rx="1"/><rect x="17" y="5" width="4" height="16" rx="1"/></svg>
       Dashboard
@@ -242,7 +242,7 @@
             <input id="npColor" placeholder="Rang (bittadan). Bir nechtasi kerak bo'lsa: Qora, Ko'k" oninput="updateVariantPreview()" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter';">
           </div>
         </div>
-        <div id="variantPreviewBox" style="background:rgba(15,118,110,.06); border:1px solid var(--teal); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:.82rem; color:var(--teal);">
+        <div id="variantPreviewBox" style="background:rgba(122,31,61,.06); border:1px solid var(--teal); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:.82rem; color:var(--teal);">
           ℹ️ 1 ta mahsulot yaratiladi (o'lcham/rang bo'sh yoki bitta bo'lsa)
         </div>
         <div style="margin-bottom:12px;">
@@ -256,7 +256,7 @@
         </div>
         <div style="display:flex; gap:8px; margin-bottom:10px;">
           <textarea id="npDescription" placeholder="Tavsif — yoki AI'ga yozdiring →" rows="2" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--paper); font-family:'Inter'; resize:vertical;"></textarea>
-          <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(15,118,110,.10); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">AI yozsin</button>
+          <button onclick="generateAIDescription()" id="aiGenBtn" style="background:rgba(122,31,61,.10); border:1px solid var(--teal); color:var(--teal); border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; font-size:.82rem; white-space:nowrap;">AI yozsin</button>
         </div>
         <button onclick="submitNewProduct()" style="width:100%; background:var(--teal); border:none; border-radius:10px; padding:12px; color:#FFFFFF; font-weight:700; cursor:pointer;">Mahsulotni qo'shish</button>
         <div id="npStatus" style="font-size:.8rem; color:var(--muted); margin-top:8px;"></div>
@@ -402,7 +402,7 @@
    ========================================================= */
 const API_BASE = ""; // api.py shu faylni o'zi /admin orqali beradi
 
-const CATEGORY_EMOJI = {"Futbolka":"👕", "Ko'ylak":"👔", "Shim":"👖", "Kurtka":"🧥", "Aksessuar":"👞"};
+const CATEGORY_EMOJI = {"Atirgullar":"🌹", "Pionlar":"🌺", "Aralash gullar":"💐", "Quyosh gullari":"🌻"};
 
 function money(n){ return Math.round(n).toLocaleString('uz-UZ') + " so'm"; }
 
@@ -503,7 +503,7 @@ async function loadInventory(){
     }
     body.innerHTML = items.map(i => `
       <tr>
-        <td><div class="prod-cell">${i.image_url ? `<img src="${i.image_url}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">` : `<div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[i.category_id]] || "🛍️"}</div>`}${i.name}</div></td>
+        <td><div class="prod-cell">${i.image_url ? `<img src="${i.image_url}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">` : `<div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[i.category_id]] || "🌸"}</div>`}${i.name}</div></td>
         <td class="mono" style="color:var(--muted);">${[i.size, i.color].filter(Boolean).join(' / ') || '—'}</td>
         <td class="mono">${i.stock} dona</td>
         <td>${stockBadge(i.stock)}</td>
@@ -615,12 +615,12 @@ async function loadCatalogPage(){
     }
     body.innerHTML = products.map(p => `
       <tr>
-        <td><div class="prod-cell">${p.image_url ? `<img src="${p.image_url}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">` : `<div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[p.category_id]] || "🛍️"}</div>`}${p.name}</div></td>
+        <td><div class="prod-cell">${p.image_url ? `<img src="${p.image_url}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;">` : `<div class="prod-emoji">${CATEGORY_EMOJI[categoryMap[p.category_id]] || "🌸"}</div>`}${p.name}</div></td>
         <td class="mono" style="color:var(--teal);">${money(p.price)}</td>
         <td class="mono" style="color:var(--muted);">${[p.size, p.color].filter(Boolean).join(' / ') || '—'}</td>
         <td class="mono">${p.stock}</td>
         <td style="display:flex; gap:6px;">
-          <button onclick="openEditModal(${p.id})" style="background:rgba(15,118,110,.10); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">Tahrirlash</button>
+          <button onclick="openEditModal(${p.id})" style="background:rgba(122,31,61,.10); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">Tahrirlash</button>
           <button onclick="deactivateProduct(${p.id})" style="background:rgba(220,38,38,.10); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer;">O'chirish</button>
         </td>
       </tr>
@@ -755,7 +755,7 @@ async function loadCategoryManagement(){
     wrap.innerHTML = cats.map(c => `
       <div style="display:flex; gap:8px; align-items:center;">
         <input value="${c.name}" id="catname-${c.id}" style="flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; color:var(--paper); font-family:'Inter'; font-size:.85rem;">
-        <button onclick="renameCategoryManaged(${c.id})" style="background:rgba(15,118,110,.10); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">Saqlash</button>
+        <button onclick="renameCategoryManaged(${c.id})" style="background:rgba(122,31,61,.10); border:1px solid var(--teal); color:var(--teal); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">Saqlash</button>
         <button onclick="deleteCategoryManaged(${c.id})" style="background:rgba(220,38,38,.10); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:7px 12px; font-size:.78rem; cursor:pointer;">O'chirish</button>
       </div>
     `).join('');

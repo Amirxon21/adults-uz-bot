@@ -7,6 +7,10 @@ Faqat bir marta, birinchi sozlashda ishga tushiring:
 Bu skript avval kategoriyalarni, so'ng har bir kategoriyaga tegishli
 mahsulotlarni qo'shadi. Agar shop.db allaqachon mavjud bo'lsa va
 qayta to'ldirmoqchi bo'lsangiz, avval shop.db faylini o'chiring.
+
+Eslatma: production serverda (Render) bu skript shart emas — api.py
+serverni birinchi marta ishga tushirganda bazasi bo'sh bo'lsa, shu
+demo ma'lumotlarni avtomatik qo'shadi.
 """
 
 import asyncio
@@ -17,7 +21,7 @@ import database as db
 async def main() -> None:
     await db.init_db()
 
-    categories = ["Futbolka", "Ko'ylak", "Shim", "Kurtka", "Aksessuar"]
+    categories = ["Atirgullar", "Pionlar", "Aralash gullar", "Quyosh gullari"]
     cat_ids = {}
     for name in categories:
         cat = await db.add_category(name)
@@ -25,26 +29,26 @@ async def main() -> None:
         print(f"Kategoriya qo'shildi: {name} (id={cat.id})")
 
     products = [
-        dict(name="Klassik oq futbolka", price=99000, size="L", color="Oq", stock=24,
-             description="100% paxta, yozgi kolleksiya. Erkin fason.", category_id=cat_ids["Futbolka"]),
-        dict(name="Qora futbolka", price=99000, size="M", color="Qora", stock=18,
-             description="100% paxta, kundalik kiyish uchun.", category_id=cat_ids["Futbolka"]),
-        dict(name="Sport futbolka", price=119000, size="L", color="Yashil", stock=30,
-             description="Nafas oluvchi mato, sport uchun.", category_id=cat_ids["Futbolka"]),
-        dict(name="Denim kurtka", price=349000, size="M", color="Ko'k", stock=6,
-             description="Og'ir zichlikdagi denim, klassik kroy.", category_id=cat_ids["Kurtka"]),
-        dict(name="Zamonaviy bomber", price=299000, size="L", color="Qora", stock=0,
-             description="Yengil, shamolga chidamli.", category_id=cat_ids["Kurtka"]),
-        dict(name="Rasmiy ko'ylak", price=189000, size="S", color="Oq", stock=15,
-             description="Ish uchun ideal, dazmollashni talab qilmaydi.", category_id=cat_ids["Ko'ylak"]),
-        dict(name="Chiziqli ko'ylak", price=169000, size="M", color="Ko'k-oq", stock=9,
-             description="Yengil paxta mato, bahor-yoz kolleksiyasi.", category_id=cat_ids["Ko'ylak"]),
-        dict(name="Slim fit shim", price=229000, size="32", color="Qora", stock=2,
-             description="Cho'ziluvchan mato, kundalik va yarim rasmiy uchun.", category_id=cat_ids["Shim"]),
-        dict(name="Klassik shim", price=209000, size="34", color="Kul rang", stock=11,
-             description="To'g'ri kroy, ofis uchun.", category_id=cat_ids["Shim"]),
-        dict(name="Teri kamar", price=79000, size="One Size", color="Jigarrang", stock=12,
-             description="Tabiiy teridan, metall pryajka bilan.", category_id=cat_ids["Aksessuar"]),
+        dict(name="11 ta qizil atirgul buketi", price=249000, size="O'rta", color="Qizil", stock=15,
+             description="Yangi kesilgan qizil atirgullar, elegant qadoqlash bilan.", category_id=cat_ids["Atirgullar"]),
+        dict(name="Pushti atirgullar guldastasi", price=229000, size="O'rta", color="Pushti", stock=12,
+             description="Nafis pushti atirgullar, romantik uchrashuvlar uchun.", category_id=cat_ids["Atirgullar"]),
+        dict(name="25 ta atirgul katta buketi", price=459000, size="Katta", color="Qizil", stock=6,
+             description="Hashamatli katta buket, muhim kunlar uchun.", category_id=cat_ids["Atirgullar"]),
+        dict(name="Pion guldastasi", price=279000, size="O'rta", color="Pushti", stock=8,
+             description="Mavsumiy pionlar, boy va yumshoq ifor bilan.", category_id=cat_ids["Pionlar"]),
+        dict(name="Oq pionlar buketi", price=289000, size="O'rta", color="Oq", stock=5,
+             description="Nafis oq pionlar, to'y va marosimlar uchun mos.", category_id=cat_ids["Pionlar"]),
+        dict(name="Bahor aralash buketi", price=199000, size="O'rta", color="Rang-barang", stock=14,
+             description="Mavsumiy gullardan tashkil topgan quvnoq buket.", category_id=cat_ids["Aralash gullar"]),
+        dict(name="Premium aralash guldasta", price=349000, size="Katta", color="Rang-barang", stock=7,
+             description="Turli gullar uyg'unlashgan hashamatli tarkib.", category_id=cat_ids["Aralash gullar"]),
+        dict(name="Kichik sovg'a buketi", price=129000, size="Kichik", color="Rang-barang", stock=20,
+             description="Kundalik sovg'a uchun ixcham va chiroyli buket.", category_id=cat_ids["Aralash gullar"]),
+        dict(name="Quyoshgul buketi", price=179000, size="O'rta", color="Sariq", stock=10,
+             description="Yorqin quyoshgullar, kayfiyat ko'tarish uchun ajoyib sovg'a.", category_id=cat_ids["Quyosh gullari"]),
+        dict(name="Katta quyoshgul guldastasi", price=259000, size="Katta", color="Sariq", stock=4,
+             description="Yirik quyoshgullardan tashkil topgan quvnoq buket.", category_id=cat_ids["Quyosh gullari"]),
     ]
 
     for p in products:
